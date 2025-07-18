@@ -1,1 +1,1 @@
-// 主邏輯：UI 操作、資料讀取與顯示
+// JavaScript for core logic
