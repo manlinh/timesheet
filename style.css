@@ -1,1 +1,7 @@
-body { font-family: sans-serif; }
+body { font-family: sans-serif; padding: 20px; }
+#scheduleContainer { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 20px; }
+input { padding: 5px; }
+textarea { width: 100%; height: 60px; margin-top: 10px; }
+@media (max-width: 600px) {
+  #scheduleContainer { grid-template-columns: repeat(2, 1fr); }
+}
