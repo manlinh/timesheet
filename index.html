@@ -1,32 +1,16 @@
-
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
   <title>夏令營時數表系統</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
-  <h1>🗓️ 夏令營時數表系統</h1>
-  <div id="login">
-    <label for="username">請輸入姓名：</label>
-    <input type="text" id="username" list="userlist" />
-    <datalist id="userlist">
-      <!-- JS 動態填入 -->
-    </datalist>
-    <button onclick="login()">登入</button>
-  </div>
-  <div id="app" style="display:none;">
-    <button onclick="switchView()">切換總日程 / 個人日程</button>
-    <button onclick="downloadExcel()">下載 Excel</button>
-    <div id="schedule-container"></div>
-    <hr>
-    <h2>💬 留言區</h2>
-    <div id="chat-container"></div>
-    <input type="text" id="chat-input" placeholder="輸入留言">
-    <button onclick="sendMessage()">送出</button>
-  </div>
-  <script src="xlsx.full.min.js"></script>
-  <script src="main.js"></script>
+  <h1>👩‍🏫 夏令營時數表系統</h1>
+  <p>請選擇老師：</p>
+  <select id="userSelect"></select>
+  <button onclick="login()">登入</button>
+  <div id="app"></div>
+  <script src="assets/main.js"></script>
 </body>
 </html>
