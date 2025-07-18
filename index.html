@@ -2,81 +2,31 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>Timesheet 網頁</title>
-  <style>
-    body { font-family: sans-serif; padding: 1em; }
-    textarea { width: 100%; height: 100px; }
-    button { margin-top: 10px; }
-    #messages { margin-top: 2em; }
-    .msg { margin-bottom: 1em; padding: 0.5em; border-bottom: 1px solid #ccc; }
-  </style>
+  <title>夏令營時數表系統</title>
+  <script src="main.js" defer></script>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>🗓️ 夏令營留言板</h1>
-  <label>你的名字：<input id="username" placeholder="請輸入暱稱"></label><br><br>
-  <textarea id="msgInput" placeholder="請輸入留言"></textarea><br>
-  <button onclick="submitMessage()">送出留言</button>
+  <h1>👩‍🏫 夏令營時數表系統</h1>
+  <div id="user-select">
+    <label for="username">請輸入使用者名稱：</label>
+    <input type="text" id="username" placeholder="輸入老師名稱">
+    <button onclick="setUsername()">確認</button>
+    <div id="user-buttons"></div>
+  </div>
 
-  <div id="messages">載入中...</div>
+  <div id="schedule-toggle">
+    <button onclick="showTotalSchedule()">總日程</button>
+    <button onclick="showPersonalSchedule()">個人日程</button>
+  </div>
 
-  <script>
-    // ⚠️ 僅供測試，實際上請使用 OAuth 流程取 token
-    const token = "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";
+  <div id="schedule-display">請先輸入使用者名稱</div>
 
-    const repoOwner = "manlinh";
-    const repoName = "timesheet";
-    const filePath = "messages.json";
-
-    async function loadMessages() {
-      try {
-        const res = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`, {
-          headers: { Authorization: `token ${token}` }
-        });
-        const json = await res.json();
-        const content = atob(json.content);
-        const messages = JSON.parse(content);
-        const list = messages.map(msg =>
-          `<div class="msg"><strong>${msg.user}</strong>：${msg.message}<br><small>${new Date(msg.time).toLocaleString()}</small></div>`
-        ).join("");
-        document.getElementById("messages").innerHTML = list;
-      } catch (e) {
-        document.getElementById("messages").innerHTML = "讀取留言失敗。";
-      }
-    }
-
-    async function submitMessage() {
-      const user = document.getElementById("username").value.trim();
-      const message = document.getElementById("msgInput").value.trim();
-      if (!user || !message) return alert("請填寫姓名與留言");
-
-      const res = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`, {
-        headers: { Authorization: `token ${token}` }
-      });
-      const fileData = await res.json();
-      const oldMessages = JSON.parse(atob(fileData.content));
-
-      const newMessages = [...oldMessages, { user, message, time: Date.now() }];
-      const newContent = btoa(JSON.stringify(newMessages, null, 2));
-
-      await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `token ${token}`,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          message: `Update ${filePath}`,
-          content: newContent,
-          sha: fileData.sha
-        })
-      });
-
-      alert("✅ 已留言！");
-      document.getElementById("msgInput").value = "";
-      loadMessages();
-    }
-
-    loadMessages();
-  </script>
+  <div id="message-board">
+    <h2>留言板</h2>
+    <input type="text" id="message-input" placeholder="留言內容">
+    <button onclick="submitMessage()">送出留言</button>
+    <ul id="messages"></ul>
+  </div>
 </body>
 </html>
