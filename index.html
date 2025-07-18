@@ -4,12 +4,20 @@
 <head>
   <meta charset="UTF-8">
   <title>夏令營時數表系統</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 2em; background-color: #f0f8ff; }
+    h1 { color: #0077cc; }
+    button { padding: 10px 20px; margin: 10px; font-size: 16px; border-radius: 8px; border: none; background-color: #0077cc; color: white; cursor: pointer; }
+    button:hover { background-color: #005fa3; }
+    a { text-decoration: none; }
+  </style>
 </head>
 <body>
-  <h1>📅 夏令營總日程與留言下載</h1>
-  <ul>
-    <li><a href="schedule.xlsx" download>📥 下載總日程 Excel（schedule.xlsx）</a></li>
-    <li><a href="messages.xlsx" download>📥 下載留言紀錄 Excel（messages.xlsx）</a></li>
-  </ul>
+  <h1>👩‍🏫 夏令營時數表系統</h1>
+  <p>歡迎使用夏令營教師時數與留言同步系統</p>
+  <button onclick="window.location.href='schedule.html'">前往日程系統</button>
+  <br>
+  <a href="schedule.xlsx" download><button>下載總日程表 (Excel)</button></a>
+  <a href="messages.xlsx" download><button>下載留言紀錄 (Excel)</button></a>
 </body>
 </html>
