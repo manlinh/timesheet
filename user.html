@@ -1,0 +1,30 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>個人日程檢視</title>
+  <style>
+    body { font-family: sans-serif; margin: 2em; }
+    h1 { color: #333; }
+    #schedule { white-space: pre-wrap; background: #f0f0f0; padding: 1em; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h1>👤 個人日程檢視</h1>
+  <p>使用者名稱：<span id="usernameDisplay"></span></p>
+  <div id="schedule">載入中...</div>
+  <script>
+    const username = new URLSearchParams(window.location.search).get('user');
+    document.getElementById('usernameDisplay').textContent = username;
+
+    fetch('schedule.json')
+      .then(r => r.json())
+      .then(data => {
+        const filtered = data.filter(entry => entry.user === username);
+        const text = filtered.map(e => `📅 ${e.date}：${e.task}`).join('\n');
+        document.getElementById('schedule').textContent = text || '尚無日程紀錄';
+      });
+  </script>
+</body>
+</html>
