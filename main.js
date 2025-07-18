@@ -77,3 +77,40 @@ async function updateJSON(path, content) {
 }
 if (window.location.pathname.includes("index")) loadUsers();
 if (window.location.pathname.includes("schedule")) loadSchedule();
+
+function formatTime(ts) {
+  const d = new Date(ts);
+  return d.toLocaleString("zh-TW");
+}
+
+// Load messages
+async function loadMessages() {
+  const data = await fetchJSON(MESSAGES_PATH);
+  const container = document.getElementById("messagesContainer");
+  container.innerHTML = "";
+  data.forEach(m => {
+    const div = document.createElement("div");
+    div.textContent = `[${formatTime(m.time)}] ${m.user}: ${m.message}`;
+    container.appendChild(div);
+  });
+}
+
+// Initialize empty schedule for new user
+async function loadSchedule() {
+  const user = localStorage.getItem("currentUser");
+  document.getElementById("userTitle").textContent = user + " 的日程與留言板";
+  const schedule = await fetchJSON(SCHEDULE_PATH);
+  if (!schedule[user]) {
+    schedule[user] = Array(7 * 6).fill("");  // 6 weeks * 7 days
+    await updateJSON(SCHEDULE_PATH, schedule);
+  }
+  const container = document.getElementById("scheduleContainer");
+  const data = schedule[user];
+  data.forEach((entry, idx) => {
+    const cell = document.createElement("input");
+    cell.value = entry;
+    cell.dataset.index = idx;
+    container.appendChild(cell);
+  });
+  loadMessages();
+}
