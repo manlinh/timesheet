@@ -1,47 +1,27 @@
 
-const GITHUB_TOKEN = "ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"; // 請替換為實際 Token
-const REPO_OWNER = "manlinh";
-const REPO_NAME = "timesheet";
+let username = "";
 
-async function updateGitHubFile(path, content, message = "Update file") {
-  const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`;
-  const encodedContent = btoa(unescape(encodeURIComponent(content)));
-
-  // 取得目前檔案的 SHA
-  const getResp = await fetch(url, {
-    headers: { Authorization: `token ${GITHUB_TOKEN}` },
-  });
-  const data = await getResp.json();
-  const sha = data.sha;
-
-  // PUT 更新內容
-  const res = await fetch(url, {
-    method: "PUT",
-    headers: {
-      Authorization: `token ${GITHUB_TOKEN}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      message: message,
-      content: encodedContent,
-      sha: sha,
-    }),
-  });
-
-  if (res.ok) {
-    alert("✅ 成功更新到 GitHub！");
-  } else {
-    alert("❌ 更新失敗");
-  }
+function login() {
+  username = document.getElementById("usernameInput").value;
+  document.getElementById("login").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  console.log("登入成功：" + username);
 }
 
-// 前端使用：確認更新留言或日程時呼叫此函式
-function syncMessages(messages) {
-  const json = JSON.stringify(messages, null, 2);
-  updateGitHubFile("messages.json", json, "Update messages.json");
+function loadSchedule() {
+  fetch('schedule.json')
+    .then(res => res.json())
+    .then(data => {
+      const table = document.getElementById("scheduleTable");
+      table.innerHTML = "<pre>" + JSON.stringify(data, null, 2) + "</pre>";
+    });
 }
 
-function syncSchedule(schedule) {
-  const json = JSON.stringify(schedule, null, 2);
-  updateGitHubFile("schedule.json", json, "Update schedule.json");
+function syncNow() {
+  alert("🛰️ 正在模擬即時同步...");
+  // 在此可呼叫 GitHub API 或伺服器端 WebSocket 更新資料
+}
+
+function downloadExcel() {
+  alert("🔽 下載功能建議搭配後端 API 生成 XLSX。");
 }

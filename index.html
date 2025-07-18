@@ -4,9 +4,21 @@
 <head>
   <meta charset="UTF-8">
   <title>Timesheet 網頁</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>👩‍🏫 夏令營時數表系統</h1>
-  <a href="schedule.html">➡️ 進入日程頁面</a>
+  <h1>⏰ 夏令營時數表系統</h1>
+  <div id="login">
+    <label>輸入使用者名稱：</label>
+    <input id="usernameInput" />
+    <button onclick="login()">登入</button>
+  </div>
+  <div id="app" style="display:none">
+    <button onclick="loadSchedule()">載入總日程</button>
+    <button onclick="syncNow()">🔄 同步</button>
+    <button onclick="downloadExcel()">下載 xlsx</button>
+    <div id="scheduleTable"></div>
+  </div>
+  <script src="main.js"></script>
 </body>
 </html>
