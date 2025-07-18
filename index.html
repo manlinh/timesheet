@@ -1,32 +1,31 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <title>夏令營時數表系統</title>
-  <script src="main.js" defer></script>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>夏令營時數系統</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>👩‍🏫 夏令營時數表系統</h1>
-  <div id="user-select">
-    <label for="username">請輸入使用者名稱：</label>
-    <input type="text" id="username" placeholder="輸入老師名稱">
-    <button onclick="setUsername()">確認</button>
-    <div id="user-buttons"></div>
+  <h1>👩‍🏫 夏令營時數系統</h1>
+  <label>請輸入姓名或選擇：
+    <input type="text" id="usernameInput" placeholder="請輸入名稱" />
+    <button onclick="setUsername()">確定</button>
+  </label>
+  <div id="userList"></div>
+  <hr />
+  <div>
+    <button onclick="showSchedule('all')">總日程</button>
+    <button onclick="showSchedule('personal')">個人日程</button>
   </div>
-
-  <div id="schedule-toggle">
-    <button onclick="showTotalSchedule()">總日程</button>
-    <button onclick="showPersonalSchedule()">個人日程</button>
-  </div>
-
-  <div id="schedule-display">請先輸入使用者名稱</div>
-
-  <div id="message-board">
+  <div id="scheduleContainer">載入中...</div>
+  <hr />
+  <div id="messages">
     <h2>留言板</h2>
-    <input type="text" id="message-input" placeholder="留言內容">
+    <textarea id="messageInput" placeholder="輸入留言..."></textarea>
     <button onclick="submitMessage()">送出留言</button>
-    <ul id="messages"></ul>
+    <ul id="messageList"></ul>
   </div>
+  <script src="main.js"></script>
+  <script src="api.js"></script>
 </body>
 </html>

@@ -1,75 +1,56 @@
 let currentUser = "";
 let messages = [];
-let totalSchedule = {
-  "2025-07-17": { "09:00": ["小A", "小B"], "13:00": ["小C"] },
-  "2025-07-18": { "10:00": ["小B"], "14:00": ["小A", "小D"] }
-};
-
-const defaultUsers = ["小A", "小B", "小C", "小D"];
+let scheduleData = { all: [], personal: [] };
 
 function setUsername() {
-  const input = document.getElementById("username").value;
-  if (!input) return alert("請輸入使用者名稱");
-  currentUser = input;
-  renderUserButtons();
-  renderSchedule();
-  renderMessages();
+  const input = document.getElementById("usernameInput");
+  currentUser = input.value || "匿名";
+  loadSchedule();
+  loadMessages();
 }
 
-function renderUserButtons() {
-  const container = document.getElementById("user-buttons");
-  container.innerHTML = "";
-  defaultUsers.forEach(name => {
-    const btn = document.createElement("button");
-    btn.textContent = name;
-    btn.onclick = () => {
-      currentUser = name;
-      document.getElementById("username").value = name;
-      renderSchedule();
-      renderMessages();
-    };
-    container.appendChild(btn);
-  });
+function showSchedule(type) {
+  const container = document.getElementById("scheduleContainer");
+  const items = type === "all" ? scheduleData.all : scheduleData.personal;
+  container.innerHTML = "<pre>" + JSON.stringify(items, null, 2) + "</pre>";
 }
 
-function showTotalSchedule() {
-  renderSchedule();
-}
-
-function showPersonalSchedule() {
-  renderSchedule(true);
-}
-
-function renderSchedule(personal = false) {
-  const container = document.getElementById("schedule-display");
-  container.innerHTML = "";
-  Object.entries(totalSchedule).forEach(([date, times]) => {
-    const dateBlock = document.createElement("div");
-    dateBlock.innerHTML = `<strong>${date}</strong><br>`;
-    Object.entries(times).forEach(([time, names]) => {
-      if (!personal || names.includes(currentUser)) {
-        dateBlock.innerHTML += `${time}：${names.join("、")}<br>`;
-      }
+function loadSchedule() {
+  fetch("https://raw.githubusercontent.com/manlinh/timesheet/main/schedule.json")
+    .then(res => res.json())
+    .then(data => {
+      scheduleData.all = data;
+      scheduleData.personal = data.filter(e => e.user === currentUser);
+      showSchedule("all");
     });
-    container.appendChild(dateBlock);
+}
+
+function loadMessages() {
+  fetch("https://raw.githubusercontent.com/manlinh/timesheet/main/messages.json")
+    .then(res => res.json())
+    .then(data => {
+      messages = data;
+      renderMessages();
+    });
+}
+
+function renderMessages() {
+  const ul = document.getElementById("messageList");
+  ul.innerHTML = "";
+  messages.forEach(m => {
+    const li = document.createElement("li");
+    li.textContent = `[${m.user}] ${m.message}`;
+    ul.appendChild(li);
   });
 }
 
 function submitMessage() {
-  const text = document.getElementById("message-input").value;
-  if (!text) return;
-  const message = { user: currentUser, text, time: new Date().toLocaleString() };
-  messages.push(message);
+  const input = document.getElementById("messageInput");
+  const msg = input.value;
+  if (!msg) return;
+  const newMsg = { user: currentUser, message: msg, time: Date.now() };
+  messages.push(newMsg);
   renderMessages();
-  document.getElementById("message-input").value = "";
-}
-
-function renderMessages() {
-  const ul = document.getElementById("messages");
-  ul.innerHTML = "";
-  messages.forEach(msg => {
-    const li = document.createElement("li");
-    li.textContent = `[${msg.time}] ${msg.user}：${msg.text}`;
-    ul.appendChild(li);
-  });
+  input.value = "";
+  updateMessages(messages);
 }
