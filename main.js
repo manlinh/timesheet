@@ -1,18 +1,10 @@
+const token = 'YOUR_GITHUB_TOKEN_HERE'; // Replace this manually
+const repo = 'manlinh/timesheet';
 
 function login() {
-  const user = document.getElementById("usernameSelect").value;
-  localStorage.setItem("username", user);
+  const username = document.getElementById('usernameInput').value.trim();
+  if (!username) return alert("請輸入名稱");
+
+  localStorage.setItem('username', username);
   window.location.href = "schedule.html";
 }
-
-fetch("users.json")
-  .then(res => res.json())
-  .then(users => {
-    const sel = document.getElementById("usernameSelect");
-    users.forEach(u => {
-      const opt = document.createElement("option");
-      opt.value = u;
-      opt.textContent = u;
-      sel.appendChild(opt);
-    });
-  });

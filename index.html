@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>夏令營時數表系統</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h1>👩‍🏫 夏令營時數表系統</h1>
-  <label for="username">請選擇使用者：</label>
-  <select id="usernameSelect"></select>
-  <button onclick="login()">登入</button>
+  <div>
+    <label>請輸入使用者名稱：</label>
+    <input id="usernameInput" type="text" placeholder="請輸入名稱">
+    <button onclick="login()">登入</button>
+  </div>
+  <div id="app"></div>
   <script src="main.js"></script>
 </body>
 </html>
