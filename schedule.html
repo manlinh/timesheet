@@ -1,13 +1,22 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>查看日程</title>
-  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h2>🗓 使用者個人日程</h2>
-  <div id="scheduleContainer">載入中...</div>
-  <script src="assets/schedule.js"></script>
+  <h1>📅 使用者日程</h1>
+  <div id="scheduleTable">載入中...</div>
+  <form id="addForm">
+    <label>日期：</label><input type="date" id="dateInput" required />
+    <label>時間：</label><input type="time" id="timeInput" required />
+    <label>課程內容：</label><input type="text" id="courseInput" required />
+    <label>備註：</label><input type="text" id="noteInput" />
+    <button type="submit">確認新增</button>
+  </form>
+  <button onclick="downloadExcel()">⬇ 下載資料</button>
+  <script src="xlsx.full.min.js"></script>
+  <script src="schedule.js"></script>
 </body>
 </html>

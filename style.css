@@ -1,17 +1,5 @@
 
-body {
-  font-family: Arial, sans-serif;
-  padding: 20px;
-}
-table {
-  border-collapse: collapse;
-  width: 100%;
-}
-th, td {
-  padding: 6px 10px;
-  border: 1px solid #aaa;
-}
-input, button {
-  margin: 5px;
-  padding: 5px;
-}
+body { font-family: sans-serif; background: #f4f8fc; padding: 20px; }
+h1 { color: #333; }
+button { margin-top: 10px; }
+form input, textarea { display: block; margin: 8px 0; width: 100%; max-width: 400px; }
