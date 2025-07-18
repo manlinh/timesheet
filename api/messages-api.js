@@ -1,0 +1,1 @@
+// GitHub API：寫入 messages.json 的邏輯

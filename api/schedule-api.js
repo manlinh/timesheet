@@ -1,0 +1,1 @@
+// GitHub API：寫入 schedule.json 的邏輯
