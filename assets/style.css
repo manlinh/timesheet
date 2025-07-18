@@ -1,0 +1,4 @@
+body { font-family: sans-serif; background: #e7edf1; padding: 20px; }
+table { border-collapse: collapse; width: 100%; background: white; margin-top: 1em; }
+td, th { border: 1px solid #999; padding: 0.5em; text-align: center; }
+select, button { margin-top: 10px; }
