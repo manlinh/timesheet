@@ -1,12 +1,25 @@
+
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>總日程編輯</title>
+  <title>日程管理</title>
 </head>
 <body>
-  <h1>📅 總日程編輯</h1>
-  <div id="editor">載入中...</div>
-  <script src="schedule.js"></script>
+  <h2>✍️ 請輸入日程資料並送出</h2>
+  <textarea id="scheduleInput" rows="10" cols="60"></textarea><br>
+  <button onclick="submitSchedule()">送出並同步</button>
+  <script src="main.js"></script>
+  <script>
+    function submitSchedule() {
+      const raw = document.getElementById('scheduleInput').value;
+      try {
+        const json = JSON.parse(raw);
+        syncSchedule(json);
+      } catch (e) {
+        alert("請確認 JSON 格式正確");
+      }
+    }
+  </script>
 </body>
 </html>
