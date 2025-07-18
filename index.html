@@ -1,31 +1,15 @@
+
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <title>夏令營時數系統</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>夏令營時數表系統</title>
 </head>
 <body>
-  <h1>👩‍🏫 夏令營時數系統</h1>
-  <label>請輸入姓名或選擇：
-    <input type="text" id="usernameInput" placeholder="請輸入名稱" />
-    <button onclick="setUsername()">確定</button>
-  </label>
-  <div id="userList"></div>
-  <hr />
-  <div>
-    <button onclick="showSchedule('all')">總日程</button>
-    <button onclick="showSchedule('personal')">個人日程</button>
-  </div>
-  <div id="scheduleContainer">載入中...</div>
-  <hr />
-  <div id="messages">
-    <h2>留言板</h2>
-    <textarea id="messageInput" placeholder="輸入留言..."></textarea>
-    <button onclick="submitMessage()">送出留言</button>
-    <ul id="messageList"></ul>
-  </div>
-  <script src="main.js"></script>
-  <script src="api.js"></script>
+  <h1>📅 夏令營總日程與留言下載</h1>
+  <ul>
+    <li><a href="schedule.xlsx" download>📥 下載總日程 Excel（schedule.xlsx）</a></li>
+    <li><a href="messages.xlsx" download>📥 下載留言紀錄 Excel（messages.xlsx）</a></li>
+  </ul>
 </body>
 </html>
