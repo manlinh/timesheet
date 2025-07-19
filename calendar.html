@@ -2,22 +2,33 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>夏令營行事曆</title>
+  <title>夏令營行事曆（月檢視）</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h2>📅 夏令營行事曆（2025/7/1 - 9/7）</h2>
+  <h2>📅 夏令營月曆</h2>
+
+  <div id="user-login">
+    <input type="text" id="username" placeholder="請輸入教師姓名">
+    <button onclick="setUser()">登入</button>
+  </div>
+
+  <div id="calendar-controls">
+    <button onclick="prevMonth()">← 上月</button>
+    <span id="current-month"></span>
+    <button onclick="nextMonth()">下月 →</button>
+    <button onclick="goToday()">今天</button>
+  </div>
+
   <div id="calendar-container"></div>
 
-  <h3>📜 行事曆公開紀錄</h3>
+  <h3>📜 公開異動紀錄</h3>
   <div id="calendar-log"></div>
 
-  <!-- 彈出編輯視窗 -->
   <div id="popup" class="popup hidden">
     <div class="popup-content">
-      <h3>編輯行程 - <span id="popup-date"></span></h3>
-      <input id="subject" placeholder="課程內容"/>
-      <input id="user" placeholder="教師名稱"/>
+      <h3>行程編輯 - <span id="popup-date"></span></h3>
+      <input id="popup-subject" placeholder="課程內容">
       <button onclick="saveEntry()">💾 儲存</button>
       <button onclick="deleteEntry()">🗑 刪除</button>
       <button onclick="closePopup()">❌ 關閉</button>
