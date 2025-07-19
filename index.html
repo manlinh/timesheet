@@ -1,33 +1,53 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
-  <title>夏令營行事曆入口</title>
-  <style>
-    body { font-family: sans-serif; padding: 30px; text-align: center; }
-    h1 { font-size: 24px; }
-    .links a {
-      display: block;
-      margin: 10px auto;
-      padding: 10px 20px;
-      background: #337ab7;
-      color: white;
-      text-decoration: none;
-      width: 200px;
-      border-radius: 6px;
-    }
-    .links a:hover {
-      background: #286090;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <title>📅 2025 夏令營行事曆</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
-  <h1>📅 夏令營行事曆（2025）</h1>
-  <p>請選擇月份：</p>
-  <div class="links">
-    <a href="jul-calendar.html">2025 年 7 月</a>
-    <a href="aug-calendar.html">2025 年 8 月</a>
-    <a href="sep-calendar.html">2025 年 9 月</a>
+  <h1>📅 2025 夏令營行事曆</h1>
+  <div id="user-login">請先登入 👇</div>
+
+  <div id="login-area">
+    <input id="username" placeholder="請輸入教師名稱">
+    <input id="token" placeholder="請貼上 GitHub Token（僅站長輸入）">
+    <button onclick="setUser()">登入</button>
   </div>
+
+  <div id="calendar-container"></div>
+
+  <button onclick="exportMonthToExcel()">📤 匯出此月為 Excel</button>
+
+  <h3>📜 公開異動紀錄</h3>
+  <div id="calendar-log"></div>
+
+  <!-- Popup 表單 -->
+  <div id="popup" class="hidden">
+    <h3 id="popup-date"></h3>
+    <label>開始時間：
+      <select id="start-time"></select>
+    </label>
+    <label>結束時間：
+      <select id="end-time"></select>
+    </label>
+    <label>主題：
+      <input id="popup-subject">
+    </label>
+    <div>
+      <button onclick="saveEntry()">💾 儲存</button>
+      <button onclick="deleteEntry()">🗑 刪除</button>
+      <button onclick="closePopup()">❌ 關閉</button>
+    </div>
+  </div>
+
+  <script>
+    const FIXED_YEAR = 2025;
+    const FIXED_MONTH = 6; // 7月（0-indexed）
+
+    // ↓↓↓ 請引入整合好的 calendar-core.js
+  </script>
+  <script src="calendar-core.js"></script>
 </body>
 </html>
