@@ -18,25 +18,9 @@
   {
     "date": "2025-07-19",
     "user": "Mary",
-    "subject": "",
-    "time": "09:00 - 10:00",
-    "action": "新增/修改",
-    "timestamp": 1752902142.711
-  },
-  {
-    "date": "2025-07-19",
-    "user": "Mary",
     "subject": "假日",
     "time": "09:00 - 10:00",
     "action": "新增/修改",
-    "timestamp": 1752902145.823
-  },
-  {
-    "date": "2025-07-19",
-    "user": "Mary",
-    "subject": "假日",
-    "time": "09:00 - 10:00",
-    "action": "刪除",
-    "timestamp": 1752902154.018
+    "timestamp": 1752902168.388
   }
 ]
