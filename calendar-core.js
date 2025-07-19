@@ -1,4 +1,4 @@
-const GITHUB_TOKEN = "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";
+const GITHUB_TOKEN = "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";  // ← 你自己填入
 const OWNER = "manlinh";
 const REPO = "timesheet";
 
@@ -20,13 +20,14 @@ function formatDate(d) {
   return `${y}-${m}-${day}`;
 }
 
-function hashColor(name) {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) {
-    hash = name.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const hue = hash % 360;
-  return `hsl(${hue}, 70%, 85%)`;
+function showStatus(message, success = true) {
+  const el = document.getElementById("status-message");
+  el.textContent = message;
+  el.style.background = success ? "#d4edda" : "#f8d7da";
+  el.style.color = success ? "#155724" : "#721c24";
+  el.style.border = `1px solid ${success ? "#c3e6cb" : "#f5c6cb"}`;
+  el.style.display = "block";
+  setTimeout(() => { el.style.display = "none"; }, 3000);
 }
 
 async function fetchJSON(path) {
@@ -36,52 +37,55 @@ async function fetchJSON(path) {
 
 async function updateJSON(path, obj) {
   const url = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}`;
-  const r = await fetch(url, { headers:{Authorization:`token ${GITHUB_TOKEN}`} });
-  const { sha } = await r.json();
-  await fetch(url, {
-    method: "PUT",
-    headers: {
-      Accept: "application/vnd.github.v3+json",
-      "Content-Type": "application/json",
-      Authorization: `token ${GITHUB_TOKEN}`
-    },
-    body: JSON.stringify({
-      message: `Update ${path}`,
-      content: btoa(unescape(encodeURIComponent(JSON.stringify(obj, null, 2)))),
-      sha
-    })
-  });
+  try {
+    const r = await fetch(url, { headers:{Authorization:`token ${GITHUB_TOKEN}`} });
+    const { sha } = await r.json();
+
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: {
+        Accept: "application/vnd.github.v3+json",
+        "Content-Type": "application/json",
+        Authorization: `token ${GITHUB_TOKEN}`
+      },
+      body: JSON.stringify({
+        message: `Update ${path}`,
+        content: btoa(unescape(encodeURIComponent(JSON.stringify(obj, null, 2)))),
+        sha
+      })
+    });
+
+    if (!res.ok) throw new Error(await res.text());
+    showStatus(`✅ 更新成功：${path}`, true);
+  } catch (e) {
+    console.error("更新失敗", e);
+    showStatus(`❌ 寫入失敗：${path}`, false);
+  }
 }
 
 function renderCalendar() {
   const year = FIXED_YEAR;
   const month = FIXED_MONTH;
   const firstDay = new Date(year, month, 1);
-  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
   const startDay = firstDay.getDay();
 
   let html = "<table><tr><th>日</th><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th></tr><tr>";
   let dc = 0;
   for (let i = 0; i < startDay; i++) { html += "<td></td>"; dc++; }
 
-  for (let date=1; date<=daysInMonth; date++) {
+  for (let date = 1; date <= daysInMonth; date++) {
     const dt = new Date(year, month, date);
     const iso = formatDate(dt);
     const entries = (calendarData[iso] || []).map((e, idx) =>
-      `<div class="entry" style="background:${hashColor(e.user)}">
-         <div onclick="editEntry('${iso}', ${idx})">
-           ${e.user}（${e.time}）<br>${e.subject}
-         </div>
-         <button class="delete-btn" onclick="deleteSpecificEntry(event, '${iso}', ${idx})">🗑</button>
-       </div>`
-    ).join("");
-    html += `<td><div class="date-label">${date}</div>${entries}
-      <button class="add-btn" onclick="openPopup('${iso}')">➕</button>
-    </td>`;
+      `<div class="entry" onclick="editEntry('${iso}', ${idx})">
+         ${e.user}（${e.time}）<br>${e.subject}
+       </div>`).join("");
+    html += `<td><div class="date-label">${date}</div>${entries}<button onclick="openPopup('${iso}')" class="add-btn">＋</button></td>`;
     dc++;
-    if (dc%7===0 && date<daysInMonth) html += "</tr><tr>";
+    if (dc % 7 === 0 && date < daysInMonth) html += "</tr><tr>";
   }
-  while(dc%7!==0) { html += "<td></td>"; dc++; }
+  while (dc % 7 !== 0) { html += "<td></td>"; dc++; }
   html += "</tr></table>";
   document.getElementById("calendar-container").innerHTML = html;
 }
@@ -115,9 +119,9 @@ function editEntry(date, index) {
 
   const e = calendarData[date][index];
   const [start, end] = (e.time || "").split(" - ");
-  document.getElementById("start-time").value = start;
-  document.getElementById("end-time").value = end;
-  document.getElementById("popup-subject").value = e.subject;
+  document.getElementById("start-time").value = start || "09:00";
+  document.getElementById("end-time").value = end || "10:00";
+  document.getElementById("popup-subject").value = e.subject || "";
   document.getElementById("popup").classList.remove("hidden");
 }
 
@@ -135,22 +139,10 @@ async function saveEntry() {
 
   if (!calendarData[editDate]) calendarData[editDate] = [];
 
-  let matched = false;
   if (typeof editIndex === "number") {
     calendarData[editDate][editIndex] = newEntry;
-    matched = true;
   } else {
-    for (let i = 0; i < calendarData[editDate].length; i++) {
-      const e = calendarData[editDate][i];
-      if (e.user === currentUser && e.time === time) {
-        calendarData[editDate][i] = newEntry;
-        matched = true;
-        break;
-      }
-    }
-    if (!matched) {
-      calendarData[editDate].push(newEntry);
-    }
+    calendarData[editDate].push(newEntry);
   }
 
   logData.push({
@@ -167,18 +159,21 @@ async function saveEntry() {
   refresh();
 }
 
-async function deleteSpecificEntry(event, date, index) {
-  event.stopPropagation();
-  const entry = calendarData[date][index];
-  calendarData[date].splice(index, 1);
+async function deleteEntry() {
+  if (typeof editIndex !== "number") return;
+
+  const entry = calendarData[editDate][editIndex];
+  calendarData[editDate].splice(editIndex, 1);
+
   logData.push({
-    date,
-    user: entry.user,
+    date: editDate,
+    user: currentUser,
     subject: entry.subject,
     time: entry.time,
     action: "刪除",
     timestamp: Date.now() / 1000
   });
+
   await updateJSON("data/calendar.json", calendarData);
   await updateJSON("data/calendar-log.json", logData);
   refresh();
@@ -187,8 +182,8 @@ async function deleteSpecificEntry(event, date, index) {
 function renderLogs() {
   document.getElementById("calendar-log").innerHTML =
     logData.slice().reverse().map(l =>
-      `<div><b>${l.date}</b> - ${l.action} ${l.time?`(${l.time})`:""} ${l.subject||"（刪除）"} by ${l.user}
-      <small>${new Date(l.timestamp*1000).toLocaleString()}</small></div>`
+      `<div><b>${l.date}</b> - ${l.action} ${l.time ? `(${l.time})` : ""} ${l.subject || "（刪除）"} by ${l.user}
+      <small>${new Date(l.timestamp * 1000).toLocaleString()}</small></div>`
     ).join("");
 }
 
@@ -219,7 +214,7 @@ function exportMonthToExcel() {
     const key = formatDate(d);
     const events = calendarData[key] || [];
     events.forEach(e => {
-      ws_data.push([key, e.time, e.subject, e.user]);
+      ws_data.push([key, e.time || "", e.subject || "", e.user || ""]);
     });
   }
 
@@ -234,9 +229,9 @@ function generateTimeOptions() {
   const times = [];
 
   for (let h = 0; h < 24; h++) {
-    for (let n = 0; n < 60; n += 30) {
+    for (let m = 0; m < 60; m += 30) {
       const hh = String(h).padStart(2, '0');
-      const mm = String(n).padStart(2, '0');
+      const mm = String(m).padStart(2, '0');
       times.push(`${hh}:${mm}`);
     }
   }
