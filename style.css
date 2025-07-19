@@ -6,3 +6,8 @@ textarea { width: 100%; height: 80px; }
   table { font-size: 12px; display: block; overflow-x: auto; }
   input, select, button, textarea { width: 100%; margin: 5px 0; }
 }
+.date {
+  font-weight: bold;
+  color: #555;
+  margin-bottom: 4px;
+}
