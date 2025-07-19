@@ -6,7 +6,7 @@
 </head>
 <body>
   <h2>🔧 GitHub Actions 測試工具</h2>
-  <p>請輸入你的 <code>Personal Access Token</code>（建議 classic + repo 權限）</p>
+  <p>請輸入你的 <code>Personal Access Token</code>（classic + repo 權限）</p>
 
   <input id="token" placeholder="ghp_..." style="width:90%;padding:8px;">
   <button onclick="testDispatch()">🚀 測試觸發 Actions</button>
@@ -19,14 +19,28 @@
       const out = document.getElementById("output");
       if (!token) return alert("請輸入 token");
 
-      const res = await fetch(...);
-const text = await res.text();
-console.log("Status", res.status, res.statusText);
-console.log("Response Headers", [...res.headers.entries()]);
-console.log("Body", text);
+      const payload = {
+        event_type: "update-calendar",
+        client_payload: {
+          calendar: JSON.stringify({ sample: "測試資料" }),
+          log: JSON.stringify([{ event: "測試異動", time: Date.now() }])
+        }
+      };
+
+      const res = await fetch("https://api.github.com/repos/manlinh/timesheet/dispatches", {
+        method: "POST",
+        headers: {
+          "Accept": "application/vnd.github.v3+json",
+          "Authorization": "token " + token,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
 
       const text = await res.text();
-      out.textContent = `📡 回應狀態：${res.status}\n------\n${text}`;
+      out.textContent =
+        `📡 回應狀態：${res.status}\n------\n${text}`;
+      console.log("✅ Debug Response:", res.status, await res.text());
     }
   </script>
 </body>
