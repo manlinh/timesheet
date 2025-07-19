@@ -1,6 +1,6 @@
 let calendarData = {}, logData = [];
-let currentUser = "", editDate = "", editIndex = undefined;
-let currentMonth = 6; // 七月是 6
+let currentUser = "", editDate = "", editIndex;
+let currentMonth = 6;
 const FIXED_YEAR = 2025;
 
 function setUser() {
@@ -13,18 +13,20 @@ function setUser() {
 }
 
 function formatDate(d) {
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), dd = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dd}`;
 }
 
 async function fetchRemoteData() {
   try {
     const res = await fetch("https://calendar-api-jet.vercel.app/api/read-calendar");
+    if (!res.ok) throw new Error(res.status);
     const data = await res.json();
     calendarData = data.calendar || {};
     logData = data.log || [];
-    console.log("✅ 資料載入完成");
+    console.log("✅ 資料載入完成", calendarData, logData);
   } catch (e) {
-    alert("❌ 載入行事曆資料失敗");
+    alert("⚠️ 載入資料失敗，請稍後再試");
     console.error(e);
   }
 }
@@ -36,12 +38,14 @@ async function updateToAPI() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ calendar: calendarData, log: logData })
     });
-    const text = await res.text();
-    if (!res.ok) throw new Error(text);
-    console.log("✅ 資料寫入成功");
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(err);
+    }
+    console.log("✅ 更新成功");
   } catch (e) {
-    console.error("❌ 寫入失敗", e);
-    alert("❌ 無法寫入，請檢查 API 或權限");
+    console.error("❌ 更新失敗", e);
+    alert("❌ 寫入失敗，請查看 Console");
   }
 }
 
@@ -52,20 +56,19 @@ function renderCalendar() {
   const daysInMonth = new Date(year, month+1, 0).getDate();
   let html = "<table><tr><th>日</th><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th></tr><tr>";
   let dc = 0;
-  for (let i = 0; i < firstDay; i++) { html += "<td></td>"; dc++; }
 
-  for (let d = 1; d <= daysInMonth; d++) {
+  for (; dc < firstDay; dc++) html += "<td></td>";
+
+  for (let d = 1; d <= daysInMonth; d++, dc++) {
     const iso = formatDate(new Date(year, month, d));
     const entries = (calendarData[iso] || []).map((e, i) => `
       <div class="entry" onclick="editEntry('${iso}', ${i})">
-        ${e.user}（${e.time}）<br>${e.subject}
+        ${e.user} (${e.time}) ${e.subject}
         <button onclick="event.stopPropagation(); deleteEntry('${iso}', ${i})">🗑</button>
       </div>`).join("");
     html += `<td><div class="date-label">${d}</div>${entries}<button onclick="openPopup('${iso}')">➕</button></td>`;
-    dc++;
-    if (dc % 7 === 0 && d < daysInMonth) html += "</tr><tr>";
+    if (dc % 7 === 6 && d < daysInMonth) html += "</tr><tr>";
   }
-
   while (dc % 7 !== 0) { html += "<td></td>"; dc++; }
   html += "</tr></table>";
   document.getElementById("calendar-container").innerHTML = html;
@@ -81,10 +84,9 @@ function switchMonth(m) {
 }
 
 function openPopup(date) {
-  if (!localStorage.getItem("calendar_user")) return alert("請登入教師");
+  if (!localStorage.getItem("calendar_user")) return alert("請先登入教師");
   currentUser = localStorage.getItem("calendar_user");
-  editDate = date;
-  editIndex = undefined;
+  editDate = date; editIndex = undefined;
   document.getElementById("popup-date").textContent = date;
   generateTimeOptions();
   document.getElementById("start-time").value = "09:00";
@@ -96,14 +98,13 @@ function openPopup(date) {
 function editEntry(date, index) {
   event.stopPropagation();
   currentUser = localStorage.getItem("calendar_user");
-  editDate = date;
-  editIndex = index;
+  editDate = date; editIndex = index;
   const e = calendarData[date][index];
   generateTimeOptions();
-  const [start, end] = (e.time || "").split(" - ");
-  document.getElementById("start-time").value = start || "09:00";
-  document.getElementById("end-time").value = end || "10:00";
-  document.getElementById("popup-subject").value = e.subject || "";
+  const [s, ee] = e.time.split(" - ");
+  document.getElementById("start-time").value = s;
+  document.getElementById("end-time").value = ee;
+  document.getElementById("popup-subject").value = e.subject;
   document.getElementById("popup-date").textContent = date;
   document.getElementById("popup").classList.remove("hidden");
 }
@@ -114,57 +115,50 @@ function closePopup() {
 }
 
 async function saveEntry() {
-  const subject = document.getElementById("popup-subject").value.trim();
+  const subj = document.getElementById("popup-subject").value.trim();
   const start = document.getElementById("start-time").value;
   const end = document.getElementById("end-time").value;
-  const entry = { user: currentUser, subject, time: `${start} - ${end}` };
-
+  const entry = { user: currentUser, subject: subj, time: `${start} - ${end}` };
   if (!calendarData[editDate]) calendarData[editDate] = [];
   if (typeof editIndex === "number") calendarData[editDate][editIndex] = entry;
   else calendarData[editDate].push(entry);
-
-  logData.push({ date: editDate, user: currentUser, subject, time: entry.time, action: "新增/修改", timestamp: Date.now() / 1000 });
+  logData.push({ date: editDate, user: currentUser, subject: subj, time: entry.time, action: "新增/修改", timestamp: Date.now() / 1000 });
   await updateToAPI();
   refresh();
 }
 
 async function deleteEntry(date, index) {
-  const entry = calendarData[date].splice(index, 1)[0];
-  logData.push({ date, user: entry.user, subject: entry.subject, time: entry.time, action: "刪除", timestamp: Date.now() / 1000 });
+  const e = calendarData[date].splice(index, 1)[0];
+  logData.push({ date, user: e.user, subject: e.subject, time: e.time, action: "刪除", timestamp: Date.now() / 1000 });
   await updateToAPI();
   refresh();
 }
 
 function renderLogs() {
   document.getElementById("calendar-log").innerHTML = logData.slice().reverse().map(l =>
-    `<div><b>${l.date}</b> - ${l.action} (${l.time}) ${l.subject} by ${l.user}<br><small>${new Date(l.timestamp * 1000).toLocaleString()}</small></div>`
+    `<div><b>${l.date}</b> - ${l.action} (${l.time}) ${l.subject} by ${l.user}<br><small>${new Date(l.timestamp*1000).toLocaleString()}</small></div>`
   ).join("");
 }
 
 function generateTimeOptions() {
-  const start = document.getElementById("start-time"), end = document.getElementById("end-time");
-  let times = [];
-  for (let h = 0; h < 24; h++) {
-    for (let m = 0; m < 60; m += 30) {
-      const t = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-      times.push(`<option value="${t}">${t}</option>`);
-    }
+  const t=30; let opts=[];
+  for (let h=0; h<24; h++) for (let m=0; m<60; m+=t) {
+    const time = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+    opts.push(`<option value="${time}">${time}</option>`);
   }
-  start.innerHTML = end.innerHTML = times.join("");
+  document.getElementById("start-time").innerHTML = opts.join("");
+  document.getElementById("end-time").innerHTML = opts.join("");
 }
 
 function exportMonthToExcel() {
-  const wb = XLSX.utils.book_new();
-  const ws_data = [["日期", "時段", "課程", "教師"]];
-  for (let d = 1; d <= 31; d++) {
+  const wb = XLSX.utils.book_new(), rows=[["日期","時段","課程","教師"]];
+  for (let d=1; d<=31; d++) {
     const dt = new Date(FIXED_YEAR, currentMonth, d);
     if (dt.getMonth() !== currentMonth) break;
     const key = formatDate(dt);
-    (calendarData[key] || []).forEach(e => {
-      ws_data.push([key, e.time, e.subject, e.user]);
-    });
+    (calendarData[key]||[]).forEach(e => rows.push([key, e.time, e.subject, e.user]));
   }
-  const ws = XLSX.utils.aoa_to_sheet(ws_data);
+  const ws = XLSX.utils.aoa_to_sheet(rows);
   XLSX.utils.book_append_sheet(wb, ws, `${FIXED_YEAR}-${currentMonth+1}`);
   XLSX.writeFile(wb, `calendar-${FIXED_YEAR}-${currentMonth+1}.xlsx`);
 }
@@ -177,10 +171,10 @@ function refresh() {
 
 (async () => {
   await fetchRemoteData();
-  if (localStorage.getItem("calendar_user")) {
-    currentUser = localStorage.getItem("calendar_user");
-    document.getElementById("user-login").innerHTML = `👋 歡迎 ${currentUser}`;
+  const u = localStorage.getItem("calendar_user");
+  if (u) {
+    currentUser = u;
+    document.getElementById("user-login").innerHTML = `👋 歡迎 ${u}`;
   }
-  renderCalendar();
-  renderLogs();
+  refresh();
 })();
