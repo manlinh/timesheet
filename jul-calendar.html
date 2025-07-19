@@ -22,7 +22,12 @@
   <div id="popup" class="popup hidden">
     <div class="popup-content">
       <h3>行程編輯 - <span id="popup-date"></span></h3>
-      <input id="popup-time" placeholder="時段（例如：上午9點-10點）" />
+      <label>開始時間：
+  <select id="start-time"></select>
+</label>
+<label>結束時間：
+  <select id="end-time"></select>
+</label>
       <input id="popup-subject" placeholder="課程內容" />
       <button onclick="saveEntry()">💾 儲存</button>
       <button onclick="deleteEntry()">🗑 刪除</button>
