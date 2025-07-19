@@ -54,11 +54,17 @@ function renderCalendar() {
   for (let date=1; date<=daysInMonth; date++) {
     const dt = new Date(year, month, date);
     const iso = formatDate(dt);
-    const entries = (calendarData[iso]||[]).map((e, idx) =>
-      `<div class="entry" onclick="editEntry('${iso}', ${idx})">
-         ${e.user}（${e.time}）<br>${e.subject}
-       </div>`).join("");
-    html += `<td onclick="openPopup('${iso}')"><div class="date-label">${date}</div>${entries}</td>`;
+    const entries = (calendarData[iso] || []).map((e, idx) =>
+      `<div class="entry">
+         <div onclick="editEntry('${iso}', ${idx})">
+           ${e.user}（${e.time}）<br>${e.subject}
+         </div>
+         <button class="delete-btn" onclick="deleteSpecificEntry(event, '${iso}', ${idx})">🗑</button>
+       </div>`
+    ).join("");
+    html += `<td><div class="date-label">${date}</div>${entries}
+      <button class="add-btn" onclick="openPopup('${iso}')">➕</button>
+    </td>`;
     dc++;
     if (dc%7===0 && date<daysInMonth) html += "</tr><tr>";
   }
@@ -106,6 +112,7 @@ function closePopup() {
   document.getElementById("popup").classList.add("hidden");
   editIndex = undefined;
 }
+
 async function saveEntry() {
   const subject = document.getElementById("popup-subject").value.trim();
   const start = document.getElementById("start-time").value;
@@ -117,11 +124,9 @@ async function saveEntry() {
 
   let matched = false;
   if (typeof editIndex === "number") {
-    // 編輯指定行程
     calendarData[editDate][editIndex] = newEntry;
     matched = true;
   } else {
-    // 檢查是否已有相同使用者與時段
     for (let i = 0; i < calendarData[editDate].length; i++) {
       const e = calendarData[editDate][i];
       if (e.user === currentUser && e.time === time) {
@@ -164,6 +169,23 @@ async function deleteEntry() {
     timestamp: Date.now() / 1000
   });
 
+  await updateJSON("data/calendar.json", calendarData);
+  await updateJSON("data/calendar-log.json", logData);
+  refresh();
+}
+
+async function deleteSpecificEntry(event, date, index) {
+  event.stopPropagation();
+  const entry = calendarData[date][index];
+  calendarData[date].splice(index, 1);
+  logData.push({
+    date: date,
+    user: entry.user,
+    subject: entry.subject,
+    time: entry.time,
+    action: "刪除",
+    timestamp: Date.now() / 1000
+  });
   await updateJSON("data/calendar.json", calendarData);
   await updateJSON("data/calendar-log.json", logData);
   refresh();
