@@ -1,1 +1,25 @@
-<!DOCTYPE html><html><head><title>Timesheet</title><link rel='stylesheet' href='style.css'></head><body><script src='main.js'></script></body></html>
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>夏令營時數系統</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="login-area">
+    <h2>登入使用者</h2>
+    <select id="user-select"></select>
+    <input type="text" id="new-user" placeholder="新增教師名稱" />
+    <button onclick="login()">登入</button>
+  </div>
+  <div id="all-schedule" style="display:none">
+    <h2>總日程表</h2>
+    <div id="schedule"></div>
+    <button onclick="exportToExcel()">匯出 Excel</button>
+  </div>
+
+  <script src="main.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="export.js"></script>
+</body>
+</html>
