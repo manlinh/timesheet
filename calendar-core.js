@@ -12,11 +12,10 @@ function setUser() {
   currentUser = u;
   document.getElementById("user-login").innerHTML = `👋 歡迎 ${u}`;
 }
-
 function formatDate(d) {
   const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
+  const m = (d.getMonth() + 1).toString().padStart(2, '0');
+  const day = d.getDate().toString().padStart(2, '0');
   return `${y}-${m}-${day}`;
 }
 
