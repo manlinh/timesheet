@@ -1,46 +1,62 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <title>📡 測試 Calendar API</title>
+  <meta charset="UTF-8" />
+  <title>📤 測試 Calendar API 寫入</title>
 </head>
 <body>
   <h2>📤 測試 Calendar API 寫入</h2>
+
   <button onclick="sendTest()">🚀 傳送測試資料</button>
-  <pre id="output" style="margin-top:1em;background:#eee;padding:1em;"></pre>
 
-<script>
-async function sendTest() {
-  const output = document.getElementById("output");
-  const body = {
-    calendar: {
-      "2025-07-22": [{ user: "Tester", subject: "TestEvent", time: "12:00 - 13:00" }]
-    },
-    log: [{
-      date: "2025-07-22",
-      user: "Tester",
-      subject: "TestEvent",
-      time: "12:00 - 13:00",
-      action: "新增",
-      timestamp: Math.floor(Date.now() / 1000)
-    }]
-  };
+  <pre id="output" style="margin-top:1em;background:#f0f0f0;padding:1em;"></pre>
 
-  try {
-    const res = await fetch("https://calendar-api-jet.vercel.app/api/update-calendar", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    });
-    const contentType = res.headers.get("content-type") || "";
-    const text = await res.text();
-    output.textContent = `🔹_status: ${res.status}
-🔹_content-type: ${contentType}
-🔹_body: ${text}`;
-  } catch (err) {
-    output.textContent = `❌ Error: ${err}`;
-  }
-}
-</script>
+  <script>
+    async function sendTest() {
+      const output = document.getElementById("output");
+
+      const testData = {
+        calendar: {
+          "2025-07-21": [
+            {
+              user: "測試者",
+              subject: "測試寫入",
+              time: "14:00 - 15:00"
+            }
+          ]
+        },
+        log: [
+          {
+            date: "2025-07-21",
+            user: "測試者",
+            subject: "測試寫入",
+            time: "14:00 - 15:00",
+            action: "新增",
+            timestamp: Math.floor(Date.now() / 1000)
+          }
+        ]
+      };
+
+      try {
+        const res = await fetch("https://calendar-api-jet.vercel.app/api/update-calendar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(testData)
+        });
+
+        const text = await res.text();
+        output.textContent = `📡 狀態碼：${res.status}\n------\n${text}`;
+
+        if (res.ok) {
+          alert("✅ 寫入成功！");
+        } else {
+          alert("❌ 寫入失敗！");
+        }
+      } catch (e) {
+        output.textContent = `❌ 發生例外錯誤：\n${e}`;
+        alert("⚠️ 網路或伺服器錯誤");
+      }
+    }
+  </script>
 </body>
 </html>
