@@ -3,7 +3,7 @@ const OWNER = "manlinh";
 const REPO = "timesheet";
 
 let calendarData = {}, logData = [];
-let currentUser = "", editDate = "";
+let currentUser = "", editDate = "", editIndex = undefined;
 
 function setUser() {
   const u = document.getElementById("username").value.trim();
@@ -12,6 +12,7 @@ function setUser() {
   currentUser = u;
   document.getElementById("user-login").innerHTML = `👋 歡迎 ${u}`;
 }
+
 function formatDate(d) {
   const y = d.getFullYear();
   const m = (d.getMonth() + 1).toString().padStart(2, '0');
@@ -53,8 +54,10 @@ function renderCalendar() {
   for (let date=1; date<=daysInMonth; date++) {
     const dt = new Date(year, month, date);
     const iso = formatDate(dt);
-    const entries = (calendarData[iso]||[]).map(e=>
-      `<div class="entry">${e.user}（${e.time}）<br>${e.subject}</div>`).join("");
+    const entries = (calendarData[iso]||[]).map((e, idx) =>
+      `<div class="entry" onclick="editEntry('${iso}', ${idx})">
+         ${e.user}（${e.time}）<br>${e.subject}
+       </div>`).join("");
     html += `<td onclick="openPopup('${iso}')"><div class="date-label">${date}</div>${entries}</td>`;
     dc++;
     if (dc%7===0 && date<daysInMonth) html += "</tr><tr>";
@@ -68,22 +71,40 @@ function openPopup(date) {
   if (!localStorage.getItem("calendar_user")) return alert("請登入教師");
   currentUser = localStorage.getItem("calendar_user");
   editDate = date;
+  editIndex = undefined;
 
   const [yy, mm, dd] = date.split("-");
   document.getElementById("popup-date").textContent = `${yy} 年 ${parseInt(mm)} 月 ${parseInt(dd)} 日`;
 
-  const entry = (calendarData[date] || [])[0] || {};
-  const [start, end] = (entry.time || "").split(" - ");
-  generateTimeOptions(); // 載入時間下拉
+  generateTimeOptions();
+  document.getElementById("start-time").value = "09:00";
+  document.getElementById("end-time").value = "10:00";
+  document.getElementById("popup-subject").value = "";
+  document.getElementById("popup").classList.remove("hidden");
+}
 
+function editEntry(date, index) {
+  if (!localStorage.getItem("calendar_user")) return alert("請登入教師");
+  currentUser = localStorage.getItem("calendar_user");
+  editDate = date;
+  editIndex = index;
+
+  const [yy, mm, dd] = date.split("-");
+  document.getElementById("popup-date").textContent = `${yy} 年 ${parseInt(mm)} 月 ${parseInt(dd)} 日`;
+
+  generateTimeOptions();
+
+  const e = calendarData[date][index];
+  const [start, end] = (e.time || "").split(" - ");
   document.getElementById("start-time").value = start || "09:00";
   document.getElementById("end-time").value = end || "10:00";
-  document.getElementById("popup-subject").value = entry.subject || "";
+  document.getElementById("popup-subject").value = e.subject || "";
   document.getElementById("popup").classList.remove("hidden");
 }
 
 function closePopup() {
   document.getElementById("popup").classList.add("hidden");
+  editIndex = undefined;
 }
 
 async function saveEntry() {
@@ -91,10 +112,24 @@ async function saveEntry() {
   const start = document.getElementById("start-time").value;
   const end = document.getElementById("end-time").value;
   const time = `${start} - ${end}`;
+  const newEntry = { user: currentUser, subject, time };
 
   if (!calendarData[editDate]) calendarData[editDate] = [];
-  calendarData[editDate] = [{ user: currentUser, subject, time }];
-  logData.push({ date: editDate, user: currentUser, subject, time, action: "新增/修改", timestamp: Date.now() / 1000 });
+
+  if (typeof editIndex === "number") {
+    calendarData[editDate][editIndex] = newEntry;
+  } else {
+    calendarData[editDate].push(newEntry);
+  }
+
+  logData.push({
+    date: editDate,
+    user: currentUser,
+    subject,
+    time,
+    action: "新增/修改",
+    timestamp: Date.now() / 1000
+  });
 
   await updateJSON("data/calendar.json", calendarData);
   await updateJSON("data/calendar-log.json", logData);
@@ -102,8 +137,19 @@ async function saveEntry() {
 }
 
 async function deleteEntry() {
-  calendarData[editDate] = [];
-  logData.push({ date: editDate, user: currentUser, subject:"", time:"", action:"刪除", timestamp: Date.now()/1000 });
+  if (typeof editIndex !== "number") return;
+
+  const entry = calendarData[editDate][editIndex];
+  calendarData[editDate].splice(editIndex, 1);
+
+  logData.push({
+    date: editDate,
+    user: currentUser,
+    subject: entry.subject,
+    time: entry.time,
+    action: "刪除",
+    timestamp: Date.now() / 1000
+  });
 
   await updateJSON("data/calendar.json", calendarData);
   await updateJSON("data/calendar-log.json", logData);
@@ -153,6 +199,7 @@ function exportMonthToExcel() {
   XLSX.utils.book_append_sheet(wb, ws, `${y}-${m + 1}`);
   XLSX.writeFile(wb, `calendar-${y}-${m + 1}.xlsx`);
 }
+
 function generateTimeOptions() {
   const start = document.getElementById("start-time");
   const end = document.getElementById("end-time");
