@@ -1,116 +1,114 @@
-timesheet";
-const SCHEDULE_PATH = "data/schedule.json";
-const MESSAGES_PATH = "data/messages.json";
+const GITHUB_TOKEN = "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";
+const OWNER = "manlinh";
+const REPO = "timesheet";
+const USER_STORAGE_KEY = "timesheet_user";
 
-// Load users from schedule.json
-async function loadUsers() {
-  const schedule = await fetchJSON(SCHEDULE_PATH);
-  const select = document.getElementById("userSelect");
-  for (let user in schedule) {
-    let opt = document.createElement("option");
-    opt.value = user;
-    opt.textContent = user;
-    select.appendChild(opt);
-  }
+let currentSchedule = {}, currentMessages = [];
+
+async function fetchJSON(path) {
+  const res = await fetch(`data/${path}`);
+  return res.json();
 }
 
-// Login logic
+async function loadAll() {
+  currentSchedule = await fetchJSON("schedule.json");
+  currentMessages = await fetchJSON("messages.json");
+  renderFullSchedule(currentSchedule);
+  loadUserOptions(Object.keys(currentSchedule));
+  document.getElementById("all-schedule").style.display = 'block';
+}
+
+function loadUserOptions(users) {
+  const select = document.getElementById("user-select");
+  select.innerHTML = users.map(u => `<option value="${u}">${u}</option>`).join("");
+}
+
 function login() {
-  const select = document.getElementById("userSelect");
-  const input = document.getElementById("newUserInput");
-  const user = input.value || select.value;
-  localStorage.setItem("currentUser", user);
+  const select = document.getElementById("user-select");
+  const newUser = document.getElementById("new-user").value.trim();
+  const user = newUser || select.value;
+  if (!user) return alert("請選擇或新增使用者");
+  if (!(user in currentSchedule)) currentSchedule[user] = Array(14).fill("");
+  localStorage.setItem(USER_STORAGE_KEY, user);
   window.location.href = "schedule.html";
 }
 
-// Load personal schedule
-async function loadSchedule() {
-  const user = localStorage.getItem("currentUser");
-  document.getElementById("userTitle").textContent = user + " 的日程與留言板";
-  const schedule = await fetchJSON(SCHEDULE_PATH);
-  const container = document.getElementById("scheduleContainer");
-  const data = schedule[user] || [];
-  data.forEach((entry, idx) => {
-    const cell = document.createElement("input");
-    cell.value = entry;
-    cell.dataset.index = idx;
-    container.appendChild(cell);
-  });
+function renderFullSchedule(data) {
+  const days = ["一","二","三","四","五","六","日"];
+  let html = `<table><tr><th>教師</th>`;
+  for (let w=1; w<=2; w++) days.forEach(d => html+=`<th>第${w}週${d}</th>`);
+  html+="</tr>";
+  for (let u in data) {
+    html+=`<tr><td>${u}</td>`;
+    data[u].forEach(c => html+=`<td>${c||""}</td>`);
+    html+="</tr>";
+  }
+  html+="</table>";
+  document.getElementById("schedule").innerHTML = html;
 }
 
-// Post message
-async function postMessage() {
-  const user = localStorage.getItem("currentUser");
-  const text = document.getElementById("messageInput").value;
-  const msgData = await fetchJSON(MESSAGES_PATH);
-  msgData.push({ user, message: text, time: Date.now() });
-  await updateJSON(MESSAGES_PATH, msgData);
-  alert("留言已送出");
+function renderPersonalSchedule() {
+  const user = localStorage.getItem(USER_STORAGE_KEY);
+  document.getElementById("welcome").textContent = `你好，${user}`;
+  const sch = currentSchedule[user] || Array(14).fill("");
+  const days = ["一","二","三","四","五","六","日"];
+  let html = "<table><tr>";
+  days.forEach(d=> html+=`<th>第1週${d}</th>`);
+  days.forEach(d=> html+=`<th>第2週${d}</th>`);
+  html += "</tr><tr>";
+  sch.forEach((v,i)=> html+=`<td><input data-idx="${i}" value="${v}" onchange="updateCell(this)"></td>`);
+  html+="</tr></table>";
+  document.getElementById("my-schedule").innerHTML = html;
 }
 
-// Load JSON
-async function fetchJSON(path) {
-  const res = await fetch(`https://raw.githubusercontent.com/${OWNER}/${REPO}/main/${path}`);
-  return await res.json();
+function updateCell(input) {
+  const idx = +input.dataset.idx;
+  const user = localStorage.getItem(USER_STORAGE_KEY);
+  currentSchedule[user][idx] = input.value;
 }
 
-// Update JSON
-async function updateJSON(path, content) {
+async function syncSchedule() {
+  await updateJSON("data/schedule.json", currentSchedule);
+}
+
+function renderMessages() {
+  document.getElementById("message-board").innerHTML = currentMessages
+    .map(m=>`<div><b>${m.user}</b>: ${m.message} <small>(${new Date(m.time*1000).toLocaleString()})</small></div>`)
+    .join("");
+}
+
+async function addMessage() {
+  const msg = document.getElementById("new-message").value.trim();
+  if (!msg) return;
+  const user = localStorage.getItem(USER_STORAGE_KEY);
+  currentMessages.push({ user, message: msg, time: Math.floor(Date.now()/1000) });
+  renderMessages();
+  await updateJSON("data/messages.json", currentMessages);
+}
+
+async function updateJSON(path, obj) {
   const url = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}`;
-  const shaRes = await fetch(url, {
-    headers: { Authorization: `token ${GITHUB_TOKEN}` }
-  });
-  const { sha } = await shaRes.json();
-  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2))));
+  const res = await fetch(url, { headers: { Authorization: `token ${GITHUB_TOKEN}` }});
+  const { sha } = await res.json();
   await fetch(url, {
     method: "PUT",
-    headers: {
-      Authorization: `token ${GITHUB_TOKEN}`,
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type":"application/json", Authorization: `token ${GITHUB_TOKEN}` },
     body: JSON.stringify({
-      message: "Update " + path,
-      content: encoded,
+      message: `Update ${path}`,
+      content: btoa(unescape(encodeURIComponent(JSON.stringify(obj, null,2)))),
       sha
     })
   });
-}
-if (window.location.pathname.includes("index")) loadUsers();
-if (window.location.pathname.includes("schedule")) loadSchedule();
-
-function formatTime(ts) {
-  const d = new Date(ts);
-  return d.toLocaleString("zh-TW");
+  alert(`${path} 已同步`);
 }
 
-// Load messages
-async function loadMessages() {
-  const data = await fetchJSON(MESSAGES_PATH);
-  const container = document.getElementById("messagesContainer");
-  container.innerHTML = "";
-  data.forEach(m => {
-    const div = document.createElement("div");
-    div.textContent = `[${formatTime(m.time)}] ${m.user}: ${m.message}`;
-    container.appendChild(div);
-  });
-}
-
-// Initialize empty schedule for new user
-async function loadSchedule() {
-  const user = localStorage.getItem("currentUser");
-  document.getElementById("userTitle").textContent = user + " 的日程與留言板";
-  const schedule = await fetchJSON(SCHEDULE_PATH);
-  if (!schedule[user]) {
-    schedule[user] = Array(7 * 6).fill("");  // 6 weeks * 7 days
-    await updateJSON(SCHEDULE_PATH, schedule);
-  }
-  const container = document.getElementById("scheduleContainer");
-  const data = schedule[user];
-  data.forEach((entry, idx) => {
-    const cell = document.createElement("input");
-    cell.value = entry;
-    cell.dataset.index = idx;
-    container.appendChild(cell);
-  });
-  loadMessages();
+if (location.pathname.includes("schedule.html")) {
+  (async ()=>{
+    currentSchedule = await fetchJSON("schedule.json");
+    currentMessages = await fetchJSON("messages.json");
+    renderPersonalSchedule();
+    renderMessages();
+  })();
+} else {
+  loadAll();
 }
