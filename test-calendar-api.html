@@ -13,26 +13,6 @@
 
   <script>
     async function sendTest() {
-  const output = document.getElementById("output");
-  try {
-    const res = await fetch("https://calendar-api-jet.vercel.app/api/update-calendar", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        calendar: { "2025-07-20": [{ user: "測試者", subject: "行程測試", time: "10:00 - 11:00" }] },
-        log: [{ date: "2025-07-20", user: "測試者", subject: "行程測試", time: "10:00 - 11:00", action: "新增", timestamp: Math.floor(Date.now()/1000) }]
-      })
-    });
-    const text = await res.text();
-    console.log("Response status:", res.status);
-    console.log("Response body:", text);
-    output.textContent = `📡 狀態：${res.status}\n回應：${text}`;
-  } catch (err) {
-    console.error("Fetch error:", err);
-    output.textContent = `❌ Fetch error: ${err}`;
-  }
-    }
-    async function sendTest() {
       const output = document.getElementById("output");
 
       const body = {
@@ -51,16 +31,22 @@
         ]
       };
 
-      const res = await fetch("https://calendar-api-jet.vercel.app/api/update-calendar", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(body)
-      });
+      try {
+        const res = await fetch("https://calendar-api-jet.vercel.app/api/update-calendar", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
 
-      const text = await res.text();
-      output.textContent = `📡 回應狀態：${res.status}\n------\n${text}`;
+        const text = await res.text();
+        if (res.ok) {
+          output.textContent = `✅ 新增成功！\n狀態：${res.status}\n------\n${text}`;
+        } else {
+          output.textContent = `❌ 發生錯誤（狀態碼 ${res.status}）\n------\n${text}`;
+        }
+      } catch (err) {
+        output.textContent = `❌ 發生例外錯誤：${err}`;
+      }
     }
   </script>
 </body>
