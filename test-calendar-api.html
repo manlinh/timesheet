@@ -2,13 +2,11 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>📡 測試 POST Calendar API</title>
+  <title>📡 測試 Calendar API</title>
 </head>
 <body>
   <h2>📤 測試 Calendar API 寫入</h2>
-
   <button onclick="sendTest()">🚀 傳送測試資料</button>
-
   <pre id="output" style="margin-top:1em;background:#eee;padding:1em;"></pre>
 
   <script>
@@ -39,13 +37,9 @@
         });
 
         const text = await res.text();
-        if (res.ok) {
-          output.textContent = `✅ 新增成功！\n狀態：${res.status}\n------\n${text}`;
-        } else {
-          output.textContent = `❌ 發生錯誤（狀態碼 ${res.status}）\n------\n${text}`;
-        }
+        output.textContent = `📡 回應狀態：${res.status}\n------\n${text}`;
       } catch (err) {
-        output.textContent = `❌ 發生例外錯誤：${err}`;
+        output.textContent = `❌ 發生錯誤\n${err}`;
       }
     }
   </script>
