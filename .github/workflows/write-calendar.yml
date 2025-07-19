@@ -1,0 +1,24 @@
+name: Update Calendar JSON
+
+on:
+  repository_dispatch:
+    types: [update-calendar]
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Git
+        run: |
+          git config user.name "calendar-bot"
+          git config user.email "calendar@bot.local"
+
+      - name: Write calendar.json
+        run: |
+          echo '${{ github.event.client_payload.calendar }}' > data/calendar.json
+          echo '${{ github.event.client_payload.log }}' > data/calendar-log.json
+          git add data/calendar.json data/calendar-log.json
+          git commit -m "📅 update from action"
+          git push
