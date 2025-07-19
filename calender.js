@@ -91,7 +91,8 @@ function renderCalendar() {
 function openPopup(date) {
   if (!currentUser) return alert("請先登入");
   editDate = date;
-  document.getElementById("popup-date").textContent = date;
+const [yy, mm, dd] = date.split("-");
+document.getElementById("popup-date").textContent = `${yy} 年 ${parseInt(mm)} 月 ${parseInt(dd)} 日`;
   const entry = (calendarData[date] || [])[0] || {};
   document.getElementById("popup-subject").value = entry.subject || "";
   document.getElementById("popup-time").value = entry.time || "";
