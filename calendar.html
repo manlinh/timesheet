@@ -7,13 +7,20 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
-  <h1>📅 2025 年 7 月行事曆</h1>
+  <h1>📅 夏令營行事曆</h1>
+
+  <div style="text-align:center;">
+    <button onclick="switchMonth(6)">七月</button>
+    <button onclick="switchMonth(7)">八月</button>
+    <button onclick="switchMonth(8)">九月</button>
+  </div>
 
   <div id="user-login">
     <input id="username" placeholder="請輸入教師名稱">
     <button onclick="setUser()">登入</button>
   </div>
 
+  <h2 id="calendar-title"></h2>
   <div id="calendar-container"></div>
 
   <button onclick="exportMonthToExcel()">📤 匯出此月為 Excel</button>
@@ -37,10 +44,6 @@
     <button onclick="closePopup()">取消</button>
   </div>
 
-  <script>
-    const FIXED_YEAR = 2025;
-    const FIXED_MONTH = 6; // 7月：JS 中是 0-based
-  </script>
   <script src="calendar-core.js"></script>
 </body>
 </html>
