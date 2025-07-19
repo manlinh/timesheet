@@ -1,4 +1,4 @@
-const GITHUB_TOKEN = "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";  // ← 你自己填入
+const GITHUB_TOKEN = "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";  // ← 你自己填入
 const OWNER = "manlinh";
 const REPO = "timesheet";
 
