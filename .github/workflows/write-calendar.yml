@@ -12,14 +12,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: 寫入 calendar.json & calendar-log.json
-        run: |
+      - run: |
           mkdir -p data
           echo '${{ github.event.client_payload.calendar }}' > data/calendar.json
           echo '${{ github.event.client_payload.log }}' > data/calendar-log.json
           git config --global user.name "calendar-bot"
           git config --global user.email "calendar@bot.local"
           git add data/calendar.json data/calendar-log.json
-          git commit -m "📅 Update calendar from Actions"
+          git commit -m "📅 Update calendar via dispatch"
           git push
