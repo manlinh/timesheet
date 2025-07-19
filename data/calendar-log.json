@@ -9,26 +9,10 @@
   },
   {
     "date": "2025-07-22",
-    "user": "Mary",
-    "subject": "TestEvent",
-    "time": "12:00 - 13:00",
-    "action": "新增/修改",
-    "timestamp": 1752900825.43
-  },
-  {
-    "date": "2025-07-22",
-    "user": "Mary",
-    "subject": "TestEvent",
-    "time": "12:00 - 13:00",
-    "action": "新增/修改",
-    "timestamp": 1752900837.691
-  },
-  {
-    "date": "2025-07-22",
-    "user": "Mary",
+    "user": "Tester",
     "subject": "TestEvent",
     "time": "12:00 - 13:00",
     "action": "刪除",
-    "timestamp": 1752900841.033
+    "timestamp": 1752900858.243
   }
 ]
