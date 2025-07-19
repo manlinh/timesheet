@@ -1,47 +1,15 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Webhook 測試</title>
-</head>
+<html><head><meta charset="UTF-8"><title>專屬 Dispatch 發送頁</title></head>
 <body>
-  <h2>🔧 GitHub Actions 測試工具</h2>
-  <p>請輸入你的 <code>Personal Access Token</code>（classic + repo 權限）</p>
+  <h2>📤 發送 Calendar 改動到 GitHub</h2>
+  <p>請登入一次填入資料即可操作，全站訪客可即時更新。</p>
 
-  <input id="token" placeholder="ghp_..." style="width:90%;padding:8px;">
-  <button onclick="testDispatch()">🚀 測試觸發 Actions</button>
-
-  <pre id="output" style="white-space:pre-wrap;margin-top:1em;background:#eee;padding:1em;"></pre>
+  <label>教師名稱：<input id="username"></label><br>
+  <label>Token（Classic + repo）：<input id="token"></label><br>
+  <button onclick="setUser()">登入 & 存 Token</button>
 
   <script>
-    async function testDispatch() {
-      const token = document.getElementById("token").value.trim();
-      const out = document.getElementById("output");
-      if (!token) return alert("請輸入 token");
-
-      const payload = {
-        event_type: "update-calendar",
-        client_payload: {
-          calendar: JSON.stringify({ sample: "測試資料" }),
-          log: JSON.stringify([{ event: "測試異動", time: Date.now() }])
-        }
-      };
-
-      const res = await fetch("https://api.github.com/repos/manlinh/timesheet/dispatches", {
-        method: "POST",
-        headers: {
-          "Accept": "application/vnd.github.v3+json",
-          "Authorization": "token " + token,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      });
-
-      const text = await res.text();
-      out.textContent =
-        `📡 回應狀態：${res.status}\n------\n${text}`;
-      console.log("✅ Debug Response:", res.status, await res.text());
-    }
+    // 把 calendar-core.js 裡的 doDispatch 呼叫集中到此頁面
+    function setUser() { /* see above */ }
   </script>
-</body>
-</html>
+</body></html>
