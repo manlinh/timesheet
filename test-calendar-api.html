@@ -9,39 +9,38 @@
   <button onclick="sendTest()">🚀 傳送測試資料</button>
   <pre id="output" style="margin-top:1em;background:#eee;padding:1em;"></pre>
 
-  <script>
-    async function sendTest() {
-      const output = document.getElementById("output");
+<script>
+async function sendTest() {
+  const output = document.getElementById("output");
+  const body = {
+    calendar: {
+      "2025-07-22": [{ user: "Tester", subject: "TestEvent", time: "12:00 - 13:00" }]
+    },
+    log: [{
+      date: "2025-07-22",
+      user: "Tester",
+      subject: "TestEvent",
+      time: "12:00 - 13:00",
+      action: "新增",
+      timestamp: Math.floor(Date.now() / 1000)
+    }]
+  };
 
-      const body = {
-        calendar: {
-          "2025-07-20": [{ user: "測試者", subject: "行程測試", time: "10:00 - 11:00" }]
-        },
-        log: [
-          {
-            date: "2025-07-20",
-            user: "測試者",
-            subject: "行程測試",
-            time: "10:00 - 11:00",
-            action: "新增",
-            timestamp: Math.floor(Date.now() / 1000)
-          }
-        ]
-      };
-
-      try {
-        const res = await fetch("https://calendar-api-jet.vercel.app/api/update-calendar", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body)
-        });
-
-        const text = await res.text();
-        output.textContent = `📡 回應狀態：${res.status}\n------\n${text}`;
-      } catch (err) {
-        output.textContent = `❌ 發生錯誤\n${err}`;
-      }
-    }
-  </script>
+  try {
+    const res = await fetch("https://calendar-api-jet.vercel.app/api/update-calendar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    const contentType = res.headers.get("content-type") || "";
+    const text = await res.text();
+    output.textContent = `🔹_status: ${res.status}
+🔹_content-type: ${contentType}
+🔹_body: ${text}`;
+  } catch (err) {
+    output.textContent = `❌ Error: ${err}`;
+  }
+}
+</script>
 </body>
 </html>
