@@ -1,202 +1,195 @@
 let calendarData = {}, logData = [];
-let currentUser = "", editDate = "", editIndex = undefined;
-let currentMonth = 6;
+let currentUser = "", editDate = "", editIndex;
+let currentMonth = 6; // 7月
 const FIXED_YEAR = 2025;
 
+// 登入教師
 function setUser() {
   const u = document.getElementById("username").value.trim();
   if (!u) return alert("請輸入教師名稱");
-  localStorage.setItem("calendar_user", u);
   currentUser = u;
-  console.log("🔐 User set to", currentUser);
+  localStorage.setItem("calendar_user", u);
   document.getElementById("user-login").innerHTML = `👋 歡迎 ${u}`;
   renderCalendar();
 }
 
+// 格式化日期為 ISO
 function formatDate(d) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const da = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${da}`;
+  const y = d.getFullYear(), mo = String(d.getMonth()+1).padStart(2,'0'), da = String(d.getDate()).padStart(2,'0');
+  return `${y}-${mo}-${da}`;
 }
 
-async function fetchFromAPI() {
+// 從 Vercel 讀資料
+async function fetchData() {
   try {
     const res = await fetch("https://calendar-api-jet.vercel.app/api/read-calendar");
-    if (!res.ok) throw new Error("API response not ok");
-    const data = await res.json();
-    return data;
+    if (!res.ok) throw new Error(res.status);
+    return res.json();
   } catch (e) {
-    console.error("❌ 載入資料失敗", e);
-    alert("⚠️ 載入行事曆失敗，請稍後再試");
+    console.error(e);
+    alert("⚠️ 載入資料失敗，請稍後再試");
     return { calendar: {}, log: [] };
   }
 }
 
-async function updateToAPI() {
-  console.log("📡 updateToAPI called", { calendarData, logData });
+// 寫回資料到 Vercel
+async function updateData() {
   try {
     const res = await fetch("https://calendar-api-jet.vercel.app/api/update-calendar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ calendar: calendarData, log: logData })
     });
-    const text = await res.text();
-    console.log("📡 fetch returned", res.status, text);
-    if (!res.ok) throw new Error("API error " + res.status);
+    if (!res.ok) throw new Error(await res.text());
   } catch (e) {
-    console.error("❌ updateToAPI failed:", e);
-    alert("❌ 寫入失敗，請查看控制台");
+    console.error(e);
+    alert("❌ 寫入失敗，請查看 Console");
   }
 }
 
+// 呈現月曆
 function renderCalendar() {
-  updateTitle();
+  document.getElementById("calendar-title").innerText = `📅 ${FIXED_YEAR} 年 ${currentMonth+1} 月行事曆`;
   const year = FIXED_YEAR, month = currentMonth;
   const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
 
   let html = "<table><tr><th>日</th><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th></tr><tr>";
-  let dc = 0;
-  for (let i = 0; i < firstDay; i++) { html += "<td></td>"; dc++; }
+  let cellCount = 0;
+  for (; cellCount < firstDay; cellCount++) html += "<td></td>";
 
-  for (let d = 1; d <= daysInMonth; d++) {
+  for (let d=1; d<=daysInMonth; d++, cellCount++) {
     const iso = formatDate(new Date(year, month, d));
-    const entries = (calendarData[iso] || []).map((e, i) => `
-      <div class="entry" onclick="editEntry('${iso}',${i})">
-        ${e.user}（${e.time}）<br>${e.subject}
-        <button onclick="event.stopPropagation(); deleteEntry('${iso}',${i})">🗑</button>
-      </div>`).join("");
-    html += `<td><div class="date-label">${d}</div>${entries}<button onclick="openPopup('${iso}')">➕</button></td>`;
-    dc++;
-    if (dc % 7 === 0 && d < daysInMonth) html += "</tr><tr>";
+    const items = (calendarData[iso]||[])
+      .map((e,i)=>`
+        <div class="entry" onclick="editEntry('${iso}',${i})">
+          ${e.user} (${e.time}) ${e.subject}
+          <button onclick="event.stopPropagation(); deleteEntry('${iso}',${i})">🗑</button>
+        </div>`)
+      .join("");
+    html += `<td>
+      <div class="date-label">${d}</div>
+      ${items}
+      <button onclick="openEntry('${iso}')">➕</button>
+    </td>`;
+    if (cellCount % 7 === 6 && d < daysInMonth) html += "</tr><tr>";
   }
-
-  while (dc % 7 !== 0) { html += "<td></td>"; dc++; }
+  while (cellCount%7!==0) { html+="<td></td>"; cellCount++; }
   html += "</tr></table>";
   document.getElementById("calendar-container").innerHTML = html;
 }
 
-function updateTitle() {
-  document.getElementById("calendar-title").innerText = `📅 ${FIXED_YEAR} 年 ${currentMonth + 1} 月行事曆`;
-}
-
+// 切月份
 function switchMonth(m) {
-  console.log("🔁 Month switch to", m);
   currentMonth = m;
   renderCalendar();
 }
 
-function openPopup(date) {
-  console.log("➕ openPopup", date);
-  if (!localStorage.getItem("calendar_user")) return alert("請登入教師");
+// 開啟編輯
+function openEntry(date) {
+  if (!localStorage.getItem("calendar_user")) return alert("請先登入");
   currentUser = localStorage.getItem("calendar_user");
-  editDate = date;
-  editIndex = undefined;
-  document.getElementById("popup-date").textContent = date;
+  editDate = date; editIndex = undefined;
+  document.getElementById("popup-date").innerText = date;
   generateTimeOptions();
   document.getElementById("start-time").value = "09:00";
   document.getElementById("end-time").value = "10:00";
-  document.getElementById("popup-subject").value = "";
+  document.getElementById("subjects").value = "";
   document.getElementById("popup").classList.remove("hidden");
 }
 
+// 編輯已有項目
 function editEntry(date, idx) {
-  console.log("✏️ editEntry", date, idx);
   event.stopPropagation();
   currentUser = localStorage.getItem("calendar_user");
-  editDate = date;
-  editIndex = idx;
+  editDate = date; editIndex = idx;
   const e = calendarData[date][idx];
+  document.getElementById("popup-date").innerText = date;
   generateTimeOptions();
-  document.getElementById("start-time").value = e.time.split(" - ")[0];
-  document.getElementById("end-time").value = e.time.split(" - ")[1];
-  document.getElementById("popup-subject").value = e.subject;
-  document.getElementById("popup-date").textContent = date;
+  const [s, eT] = e.time.split(" - ");
+  document.getElementById("start-time").value = s;
+  document.getElementById("end-time").value = eT;
+  document.getElementById("subjects").value = e.subject;
   document.getElementById("popup").classList.remove("hidden");
 }
 
+// 關閉對話框
 function closePopup() {
-  console.log("✖ closePopup");
   document.getElementById("popup").classList.add("hidden");
   editIndex = undefined;
 }
 
+// 儲存資料
 async function saveEntry() {
-  console.log("💾 saveEntry", editDate, editIndex);
-  const subject = document.getElementById("popup-subject").value.trim();
+  const subject = document.getElementById("subjects").value.trim();
   const start = document.getElementById("start-time").value;
   const end = document.getElementById("end-time").value;
-  const entry = { user: currentUser, subject, time: `${start} - ${end}` };
-
+  const entry = { user:currentUser, subject, time:`${start} - ${end}` };
   if (!calendarData[editDate]) calendarData[editDate] = [];
-  if (typeof editIndex === "number") calendarData[editDate][editIndex] = entry;
+  if (editIndex>=0) calendarData[editDate][editIndex] = entry;
   else calendarData[editDate].push(entry);
-
-  logData.push({ date: editDate, user: currentUser, subject, time: entry.time, action: "新增/修改", timestamp: Date.now() / 1000 });
-  await updateToAPI();
+  logData.push({ date:editDate,user:currentUser,subject,time:entry.time,action:"新增/修改",timestamp:Date.now()/1000 });
+  await updateData();
   refresh();
 }
 
-async function deleteEntry(date, index) {
-  console.log("🗑 deleteEntry", date, index);
-  const entry = calendarData[date].splice(index, 1)[0];
-  logData.push({ date, user: entry.user, subject: entry.subject, time: entry.time, action: "刪除", timestamp: Date.now() / 1000 });
-  await updateToAPI();
+// 刪除項目
+async function deleteEntry(date, idx) {
+  const e = calendarData[date].splice(idx,1)[0];
+  logData.push({ date,user:e.user,subject:e.subject,time:e.time,action:"刪除",timestamp:Date.now()/1000 });
+  await updateData();
   refresh();
 }
 
-function renderLogs() {
-  document.getElementById("calendar-log").innerHTML = logData.slice().reverse().map(l =>
-    `<div><b>${l.date}</b> - ${l.action} (${l.time}) ${l.subject} by ${l.user}
-     <small>${new Date(l.timestamp * 1000).toLocaleString()}</small></div>`
-  ).join("");
+// 畫出日誌
+function renderLog() {
+  document.getElementById("calendar-log").innerHTML =
+    logData.slice().reverse()
+      .map(l=>`<div>${l.date} ${l.action} ${l.time} ${l.subject} by ${l.user}</div>`)
+      .join("");
 }
 
+// 時間選項
 function generateTimeOptions() {
   const start = document.getElementById("start-time"), end = document.getElementById("end-time");
-  let times = [];
-  for (let h = 0; h < 24; h++) {
-    for (let m = 0; m < 60; m += 30) {
-      const t = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-      times.push(`<option value="${t}">${t}</option>`);
-    }
+  let opts=[]; for(let h=0;h<24;h++)for(let m=0;m<60;m+=30){
+    const t=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+    opts.push(`<option value="${t}">${t}</option>`);
   }
-  start.innerHTML = end.innerHTML = times.join("");
+  start.innerHTML = end.innerHTML = opts.join("");
 }
 
-function exportMonthToExcel() {
-  console.log("📤 exportMonthToExcel");
+// 匯出 Excel
+function exportExcel() {
   const wb = XLSX.utils.book_new();
-  const ws_data = [["日期", "時段", "課程", "教師"]];
-  for (let d = 1; d <= 31; d++) {
-    const dt = new Date(FIXED_YEAR, currentMonth, d);
-    if (dt.getMonth() !== currentMonth) break;
-    const key = formatDate(dt);
-    (calendarData[key] || []).forEach(e => ws_data.push([key, e.time, e.subject, e.user]));
+  const data=[["日期","時間","課程","教師"]];
+  for (let d=1; d<=31; d++) {
+    const dt=new Date(FIXED_YEAR,currentMonth,d);
+    if (dt.getMonth()!==currentMonth) break;
+    const key=formatDate(dt);
+    (calendarData[key]||[]).forEach(e=>data.push([key,e.time,e.subject,e.user]));
   }
-  const ws = XLSX.utils.aoa_to_sheet(ws_data);
-  XLSX.utils.book_append_sheet(wb, ws, `${FIXED_YEAR}-${currentMonth + 1}`);
-  XLSX.writeFile(wb, `calendar-${FIXED_YEAR}-${currentMonth + 1}.xlsx`);
+  const ws=XLSX.utils.aoa_to_sheet(data);
+  XLSX.utils.book_append_sheet(wb,ws,`${FIXED_YEAR}-${currentMonth+1}`);
+  XLSX.writeFile(wb,`calendar-${FIXED_YEAR}-${currentMonth+1}.xlsx`);
 }
 
+// 重整視圖
 function refresh() {
   closePopup();
   renderCalendar();
-  renderLogs();
+  renderLog();
 }
 
-// 🔁 初始化流程（用 API 載入）
-(async () => {
-  const apiData = await fetchFromAPI();
-  calendarData = apiData.calendar || {};
-  logData = apiData.log || {};
-  if (localStorage.getItem("calendar_user")) {
-    currentUser = localStorage.getItem("calendar_user");
-    console.log("🔐 Loaded user", currentUser);
-    document.getElementById("user-login").innerHTML = `👋 歡迎 ${currentUser}`;
+// 啟動初始化
+(async()=>{
+  const d = await fetchData();
+  calendarData = d.calendar||{};
+  logData = d.log||[];
+  const u = localStorage.getItem("calendar_user");
+  if (u) {
+    currentUser = u;
+    document.getElementById("user-login").innerHTML = `👋 歡迎 ${u}`;
   }
-  renderCalendar();
-  renderLogs();
-  console.log("🚀 Initialized calendar-core.js");
+  refresh();
 })();
