@@ -106,7 +106,6 @@ function closePopup() {
   document.getElementById("popup").classList.add("hidden");
   editIndex = undefined;
 }
-
 async function saveEntry() {
   const subject = document.getElementById("popup-subject").value.trim();
   const start = document.getElementById("start-time").value;
@@ -116,10 +115,24 @@ async function saveEntry() {
 
   if (!calendarData[editDate]) calendarData[editDate] = [];
 
+  let matched = false;
   if (typeof editIndex === "number") {
+    // 編輯指定行程
     calendarData[editDate][editIndex] = newEntry;
+    matched = true;
   } else {
-    calendarData[editDate].push(newEntry);
+    // 檢查是否已有相同使用者與時段
+    for (let i = 0; i < calendarData[editDate].length; i++) {
+      const e = calendarData[editDate][i];
+      if (e.user === currentUser && e.time === time) {
+        calendarData[editDate][i] = newEntry;
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) {
+      calendarData[editDate].push(newEntry);
+    }
   }
 
   logData.push({
