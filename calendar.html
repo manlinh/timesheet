@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>📅 夏令營行事曆</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <h1>📅 2025 年 7 月行事曆</h1>
+
+  <div id="user-login">
+    <input id="username" placeholder="請輸入教師名稱">
+    <button onclick="setUser()">登入</button>
+  </div>
+
+  <div id="calendar-container"></div>
+
+  <button onclick="exportMonthToExcel()">📤 匯出此月為 Excel</button>
+
+  <h2>📜 公開異動紀錄</h2>
+  <div id="calendar-log"></div>
+
+  <div id="popup" class="hidden popup">
+    <h3>行程編輯 <span id="popup-date"></span></h3>
+    <label>開始時間：
+      <select id="start-time"></select>
+    </label><br>
+    <label>結束時間：
+      <select id="end-time"></select>
+    </label><br>
+    <label>行程主題：
+      <input id="popup-subject">
+    </label><br>
+    <button onclick="saveEntry()">💾 儲存</button>
+    <button onclick="deleteEntry()">🗑 刪除</button>
+    <button onclick="closePopup()">取消</button>
+  </div>
+
+  <script>
+    const FIXED_YEAR = 2025;
+    const FIXED_MONTH = 6; // 7月：JS 中是 0-based
+  </script>
+  <script src="calendar-core.js"></script>
+</body>
+</html>
