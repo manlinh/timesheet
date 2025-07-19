@@ -124,3 +124,23 @@ function refresh() {
   }
   refresh();
 })();
+
+function exportMonthToExcel() {
+  const wb = XLSX.utils.book_new();
+  const ws_data = [["日期", "時段", "課程", "教師"]];
+  const y = FIXED_YEAR, m = FIXED_MONTH;
+
+  for (let day = 1; day <= 31; day++) {
+    const d = new Date(y, m, day);
+    if (d.getMonth() !== m) break;
+    const key = formatDate(d);
+    const events = calendarData[key] || [];
+    events.forEach(e => {
+      ws_data.push([key, e.time || "", e.subject || "", e.user || ""]);
+    });
+  }
+
+  const ws = XLSX.utils.aoa_to_sheet(ws_data);
+  XLSX.utils.book_append_sheet(wb, ws, `${y}-${m + 1}`);
+  XLSX.writeFile(wb, `calendar-${y}-${m + 1}.xlsx`);
+}
