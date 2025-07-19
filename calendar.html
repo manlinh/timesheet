@@ -2,12 +2,28 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>夏令營月曆</title>
+  <title>夏令營行事曆</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h2>📅 夏令營標準行事曆（2025/7/1 - 9/7）</h2>
+  <h2>📅 夏令營行事曆（2025/7/1 - 9/7）</h2>
   <div id="calendar-container"></div>
+
+  <h3>📜 行事曆公開紀錄</h3>
+  <div id="calendar-log"></div>
+
+  <!-- 彈出編輯視窗 -->
+  <div id="popup" class="popup hidden">
+    <div class="popup-content">
+      <h3>編輯行程 - <span id="popup-date"></span></h3>
+      <input id="subject" placeholder="課程內容"/>
+      <input id="user" placeholder="教師名稱"/>
+      <button onclick="saveEntry()">💾 儲存</button>
+      <button onclick="deleteEntry()">🗑 刪除</button>
+      <button onclick="closePopup()">❌ 關閉</button>
+    </div>
+  </div>
+
   <script src="calendar.js"></script>
 </body>
 </html>
