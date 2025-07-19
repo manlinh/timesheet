@@ -28,3 +28,35 @@ th,td {
   background:#f8f8f8;max-height:200px;overflow:auto;font-size:0.9em;
 }
 #user-login { margin-bottom:10px; }
+.entry {
+  position: relative;
+  padding: 2px;
+  background: #f9f9f9;
+  border: 1px solid #ccc;
+  margin: 2px 0;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.delete-btn {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: transparent;
+  border: none;
+  color: red;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.add-btn {
+  margin-top: 4px;
+  width: 100%;
+  font-size: 14px;
+  padding: 2px;
+  background-color: #e0f7fa;
+  border: 1px solid #26c6da;
+  cursor: pointer;
+  border-radius: 4px;
+}
+``
