@@ -7,23 +7,22 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
-  <h1>📅 夏令營行事曆</h1>
-
-  <div style="text-align:center;">
-    <button onclick="switchMonth(6)">七月</button>
-    <button onclick="switchMonth(7)">八月</button>
-    <button onclick="switchMonth(8)">九月</button>
-  </div>
+  <h1 id="calendar-title">📅 行事曆</h1>
 
   <div id="user-login">
     <input id="username" placeholder="請輸入教師名稱">
     <button onclick="setUser()">登入</button>
   </div>
 
-  <h2 id="calendar-title"></h2>
-  <div id="calendar-container"></div>
+  <div>
+    <button onclick="switchMonth(6)">七月</button>
+    <button onclick="switchMonth(7)">八月</button>
+    <button onclick="switchMonth(8)">九月</button>
+  </div>
 
-  <button onclick="exportMonthToExcel()">📤 匯出此月為 Excel</button>
+  <div id="calendar-container" style="margin-top:1em;"></div>
+
+  <button onclick="exportExcel()">📤 匯出此月為 Excel</button>
 
   <h2>📜 公開異動紀錄</h2>
   <div id="calendar-log"></div>
@@ -37,10 +36,9 @@
       <select id="end-time"></select>
     </label><br>
     <label>行程主題：
-      <input id="popup-subject">
+      <input id="subjects">
     </label><br>
     <button onclick="saveEntry()">💾 儲存</button>
-    <button onclick="deleteEntry()">🗑 刪除</button>
     <button onclick="closePopup()">取消</button>
   </div>
 
