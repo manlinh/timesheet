@@ -20,6 +20,15 @@ function formatDate(d) {
   return `${y}-${m}-${day}`;
 }
 
+function hashColor(name) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = hash % 360;
+  return `hsl(${hue}, 70%, 85%)`;
+}
+
 async function fetchJSON(path) {
   const r = await fetch(`data/${path}`);
   return r.json();
@@ -55,7 +64,7 @@ function renderCalendar() {
     const dt = new Date(year, month, date);
     const iso = formatDate(dt);
     const entries = (calendarData[iso] || []).map((e, idx) =>
-      `<div class="entry">
+      `<div class="entry" style="background:${hashColor(e.user)}">
          <div onclick="editEntry('${iso}', ${idx})">
            ${e.user}（${e.time}）<br>${e.subject}
          </div>
