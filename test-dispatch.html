@@ -19,21 +19,11 @@
       const out = document.getElementById("output");
       if (!token) return alert("請輸入 token");
 
-      const res = await fetch("https://api.github.com/repos/manlinh/timesheet/dispatches", {
-        method: "POST",
-        headers: {
-          "Accept": "application/vnd.github.v3+json",
-          "Authorization": "token " + token,
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          event_type: "update-calendar",
-          client_payload: {
-            calendar: "{}",
-            log: "{}"
-          }
-        })
-      });
+      const res = await fetch(...);
+const text = await res.text();
+console.log("Status", res.status, res.statusText);
+console.log("Response Headers", [...res.headers.entries()]);
+console.log("Body", text);
 
       const text = await res.text();
       out.textContent = `📡 回應狀態：${res.status}\n------\n${text}`;
