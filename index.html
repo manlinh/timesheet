@@ -1,25 +1,33 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <title>夏令營時數系統</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <title>夏令營行事曆入口</title>
+  <style>
+    body { font-family: sans-serif; padding: 30px; text-align: center; }
+    h1 { font-size: 24px; }
+    .links a {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      background: #337ab7;
+      color: white;
+      text-decoration: none;
+      width: 200px;
+      border-radius: 6px;
+    }
+    .links a:hover {
+      background: #286090;
+    }
+  </style>
 </head>
 <body>
-  <div id="login-area">
-    <h2>登入使用者</h2>
-    <select id="user-select"></select>
-    <input type="text" id="new-user" placeholder="新增教師名稱" />
-    <button onclick="login()">登入</button>
+  <h1>📅 夏令營行事曆（2025）</h1>
+  <p>請選擇月份進入月曆管理畫面：</p>
+  <div class="links">
+    <a href="jul-calendar.html">2025 年 7 月</a>
+    <a href="aug-calendar.html">2025 年 8 月</a>
+    <a href="sep-calendar.html">2025 年 9 月</a>
   </div>
-  <div id="all-schedule" style="display:none">
-    <h2>總日程表</h2>
-    <div id="schedule"></div>
-    <button onclick="exportToExcel()">匯出 Excel</button>
-  </div>
-
-  <script src="main.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-  <script src="export.js"></script>
 </body>
 </html>
