@@ -2,22 +2,18 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <title>七月月曆</title>
+  <title>九月月曆</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h2>📅 2025 年 7 月行事曆</h2>
-
+  <h2>📅 2025 年 9 月行事曆</h2>
   <div id="user-login">
     <input type="text" id="username" placeholder="請輸入教師姓名" />
     <button onclick="setUser()">登入</button>
   </div>
-
   <div id="calendar-container"></div>
-
   <h3>📜 公開異動紀錄</h3>
   <div id="calendar-log"></div>
-
   <div id="popup" class="popup hidden">
     <div class="popup-content">
       <h3>行程編輯 - <span id="popup-date"></span></h3>
@@ -28,10 +24,9 @@
       <button onclick="closePopup()">❌ 關閉</button>
     </div>
   </div>
-
   <script>
     const FIXED_YEAR = 2025;
-    const FIXED_MONTH = 8; // 0-indexed: 6 = July
+    const FIXED_MONTH = 8; // 8 = September
   </script>
   <script src="calendar-core.js"></script>
 </body>
