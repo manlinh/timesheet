@@ -1,2 +1,20 @@
-<!DOCTYPE html><html><head><title>Schedule</title><link rel='stylesheet' href='style.css'></head><body><script src='main.js'></script><script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-</body></html>
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>個人日程 & 留言板</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2 id="welcome"></h2>
+  <div id="my-schedule"></div>
+  <button onclick="syncSchedule()">同步日程</button>
+
+  <h3>留言板</h3>
+  <div id="message-board"></div>
+  <textarea id="new-message" placeholder="說點什麼吧…"></textarea>
+  <button onclick="addMessage()">送出留言</button>
+
+  <script src="main.js"></script>
+</body>
+</html>
