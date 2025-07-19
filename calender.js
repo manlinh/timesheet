@@ -74,7 +74,7 @@ function renderCalendar() {
       const iso = formatDate(d);
       const isCurrentMonth = d.getMonth() === month;
       const entries = (calendarData[iso] || []).map(e =>
-        `<div class="entry">${e.user}: ${e.subject}</div>`).join("");
+        `<div class="entry">${e.user}（${e.time}）<br>${e.subject}</div>`).join("");
 
       html += `<td style="background:${isCurrentMonth ? "#fff" : "#f0f0f0"}" onclick="openPopup('${iso}')">
         <div class="date-label">${d.getDate()}</div>${entries}</td>`;
@@ -94,6 +94,7 @@ function openPopup(date) {
   document.getElementById("popup-date").textContent = date;
   const entry = (calendarData[date] || [])[0] || {};
   document.getElementById("popup-subject").value = entry.subject || "";
+  document.getElementById("popup-time").value = entry.time || "";
   document.getElementById("popup").classList.remove("hidden");
 }
 
@@ -103,9 +104,10 @@ function closePopup() {
 
 async function saveEntry() {
   const subject = document.getElementById("popup-subject").value.trim();
+  const time = document.getElementById("popup-time").value.trim();
   if (!calendarData[editDate]) calendarData[editDate] = [];
-  calendarData[editDate] = [{ user: currentUser, subject }];
-  logData.push({ date: editDate, user: currentUser, subject, action: "新增/修改", time: Date.now() / 1000 });
+  calendarData[editDate] = [{ user: currentUser, subject, time }];
+  logData.push({ date: editDate, user: currentUser, subject, time, action: "新增/修改", timestamp: Date.now() / 1000 });
 
   await updateJSON("data/calendar.json", calendarData);
   await updateJSON("data/calendar-log.json", logData);
@@ -117,7 +119,7 @@ async function saveEntry() {
 
 async function deleteEntry() {
   calendarData[editDate] = [];
-  logData.push({ date: editDate, user: currentUser, subject: "", action: "刪除", time: Date.now() / 1000 });
+  logData.push({ date: editDate, user: currentUser, subject: "", time: "", action: "刪除", timestamp: Date.now() / 1000 });
 
   await updateJSON("data/calendar.json", calendarData);
   await updateJSON("data/calendar-log.json", logData);
@@ -130,8 +132,8 @@ async function deleteEntry() {
 function renderLogs() {
   const container = document.getElementById("calendar-log");
   container.innerHTML = logData.slice().reverse().map(log =>
-    `<div><b>${log.date}</b> - ${log.action} ${log.subject || "（刪除）"} by ${log.user} 
-    <small>${new Date(log.time * 1000).toLocaleString()}</small></div>`
+    `<div><b>${log.date}</b> - ${log.action} ${log.time ? `(${log.time})` : ""} ${log.subject || "（刪除）"} by ${log.user} 
+    <small>${new Date(log.timestamp * 1000).toLocaleString()}</small></div>`
   ).join("");
 }
 
