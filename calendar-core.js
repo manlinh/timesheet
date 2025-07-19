@@ -25,6 +25,7 @@ async function fetchJSON(file) {
 }
 
 async function updateToAPI() {
+async function updateToAPI() {
   console.log("📡 updateToAPI called", { calendarData, logData });
   try {
     const res = await fetch("https://calendar-api-jet.vercel.app/api/update-calendar", {
@@ -188,3 +189,4 @@ function refresh() {
   renderLogs();
   console.log("🚀 Initialized calendar-core.js");
 })();
+b
