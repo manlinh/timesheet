@@ -68,10 +68,17 @@ function openPopup(date) {
   if (!localStorage.getItem("calendar_user")) return alert("請登入教師");
   currentUser = localStorage.getItem("calendar_user");
   editDate = date;
-  document.getElementById("popup-date").innerText = date;
-  const e = (calendarData[date]||[])[0]||{};
-  document.getElementById("popup-time").value = e.time||"";
-  document.getElementById("popup-subject").value = e.subject||"";
+
+  const [yy, mm, dd] = date.split("-");
+  document.getElementById("popup-date").textContent = `${yy} 年 ${parseInt(mm)} 月 ${parseInt(dd)} 日`;
+
+  const entry = (calendarData[date] || [])[0] || {};
+  const [start, end] = (entry.time || "").split(" - ");
+  generateTimeOptions(); // 載入時間下拉
+
+  document.getElementById("start-time").value = start || "09:00";
+  document.getElementById("end-time").value = end || "10:00";
+  document.getElementById("popup-subject").value = entry.subject || "";
   document.getElementById("popup").classList.remove("hidden");
 }
 
@@ -81,10 +88,13 @@ function closePopup() {
 
 async function saveEntry() {
   const subject = document.getElementById("popup-subject").value.trim();
-  const time = document.getElementById("popup-time").value.trim();
+  const start = document.getElementById("start-time").value;
+  const end = document.getElementById("end-time").value;
+  const time = `${start} - ${end}`;
+
   if (!calendarData[editDate]) calendarData[editDate] = [];
   calendarData[editDate] = [{ user: currentUser, subject, time }];
-  logData.push({ date: editDate, user: currentUser, subject, time, action:"新增/修改", timestamp: Date.now()/1000 });
+  logData.push({ date: editDate, user: currentUser, subject, time, action: "新增/修改", timestamp: Date.now() / 1000 });
 
   await updateJSON("data/calendar.json", calendarData);
   await updateJSON("data/calendar-log.json", logData);
@@ -142,4 +152,20 @@ function exportMonthToExcel() {
   const ws = XLSX.utils.aoa_to_sheet(ws_data);
   XLSX.utils.book_append_sheet(wb, ws, `${y}-${m + 1}`);
   XLSX.writeFile(wb, `calendar-${y}-${m + 1}.xlsx`);
+}
+function generateTimeOptions() {
+  const start = document.getElementById("start-time");
+  const end = document.getElementById("end-time");
+  const times = [];
+
+  for (let h = 0; h < 24; h++) {
+    for (let m = 0; m < 60; m += 30) {
+      const hh = String(h).padStart(2, '0');
+      const mm = String(m).padStart(2, '0');
+      times.push(`${hh}:${mm}`);
+    }
+  }
+
+  start.innerHTML = times.map(t => `<option value="${t}">${t}</option>`).join('');
+  end.innerHTML = times.map(t => `<option value="${t}">${t}</option>`).join('');
 }
