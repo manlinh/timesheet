@@ -1,1 +1,9 @@
-{"sample":"測試資料"}
+{
+  "2025-07-22": [
+    {
+      "user": "Tester",
+      "subject": "TestEvent",
+      "time": "12:00 - 13:00"
+    }
+  ]
+}
