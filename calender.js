@@ -1,19 +1,36 @@
 const GITHUB_TOKEN = "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";
 const OWNER = "manlinh";
 const REPO = "timesheet";
+let calendarData = {}, logData = [];
+let currentMonth = new Date();
+let currentUser = "";
+let editDate = "";
 
-let calendarData = {};
-let logData = [];
-let currentDate = "";
+function setUser() {
+  const user = document.getElementById("username").value.trim();
+  if (!user) return alert("請輸入使用者名稱");
+  localStorage.setItem("calendar_user", user);
+  currentUser = user;
+  document.getElementById("user-login").innerHTML = `👋 歡迎 ${user}`;
+}
 
-function getDateRange(start, end) {
-  const range = [];
-  const d = new Date(start);
-  while (d <= new Date(end)) {
-    range.push(new Date(d));
-    d.setDate(d.getDate() + 1);
-  }
-  return range;
+function goToday() {
+  currentMonth = new Date();
+  renderCalendar();
+}
+
+function prevMonth() {
+  currentMonth.setMonth(currentMonth.getMonth() - 1);
+  renderCalendar();
+}
+
+function nextMonth() {
+  currentMonth.setMonth(currentMonth.getMonth() + 1);
+  renderCalendar();
+}
+
+function formatDate(d) {
+  return d.toISOString().split("T")[0];
 }
 
 async function fetchJSON(path) {
@@ -39,36 +56,44 @@ async function updateJSON(path, obj) {
   });
 }
 
-function renderCalendar(data) {
+function renderCalendar() {
+  const year = currentMonth.getFullYear();
+  const month = currentMonth.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startDate = new Date(firstDay);
+  startDate.setDate(1 - firstDay.getDay());
+
   const container = document.getElementById("calendar-container");
-  const start = new Date("2025-07-01");
-  const end = new Date("2025-09-07");
-  const allDays = getDateRange(start, end);
+  let html = "<table><tr><th>日</th><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th></tr>";
 
-  let html = "<table><thead><tr><th>週次</th><th>日</th><th>一</th><th>二</th><th>三</th><th>四</th><th>五</th><th>六</th></tr></thead><tbody>";
+  let d = new Date(startDate);
+  for (let w = 0; w < 6; w++) {
+    html += "<tr>";
+    for (let i = 0; i < 7; i++) {
+      const iso = formatDate(d);
+      const isCurrentMonth = d.getMonth() === month;
+      const entries = (calendarData[iso] || []).map(e =>
+        `<div class="entry">${e.user}: ${e.subject}</div>`).join("");
 
-  for (let i = 0; i < allDays.length; i += 7) {
-    html += "<tr><td>第" + (i / 7 + 1) + "週</td>";
-    for (let j = 0; j < 7; j++) {
-      const day = allDays[i + j];
-      if (!day) { html += "<td></td>"; continue; }
-      const iso = day.toISOString().split("T")[0];
-      const lessons = (data[iso] || []).map(d => `<div>${d.user}: ${d.subject}</div>`).join("");
-      html += `<td onclick="editDate('${iso}')"><div class="date">${iso.slice(5)}</div>${lessons}</td>`;
+      html += `<td style="background:${isCurrentMonth ? "#fff" : "#f0f0f0"}" onclick="openPopup('${iso}')">
+        <div class="date-label">${d.getDate()}</div>${entries}</td>`;
+      d.setDate(d.getDate() + 1);
     }
     html += "</tr>";
   }
+  html += "</table>";
 
-  html += "</tbody></table>";
-  container.innerHTML = html;
+  document.getElementById("calendar-container").innerHTML = html;
+  document.getElementById("current-month").textContent = `${year} 年 ${month + 1} 月`;
 }
 
-function editDate(iso) {
-  currentDate = iso;
-  document.getElementById("popup-date").textContent = iso;
-  const entry = (calendarData[iso] || [])[0] || {};
-  document.getElementById("subject").value = entry.subject || "";
-  document.getElementById("user").value = entry.user || "";
+function openPopup(date) {
+  if (!currentUser) return alert("請先登入");
+  editDate = date;
+  document.getElementById("popup-date").textContent = date;
+  const entry = (calendarData[date] || [])[0] || {};
+  document.getElementById("popup-subject").value = entry.subject || "";
   document.getElementById("popup").classList.remove("hidden");
 }
 
@@ -77,42 +102,44 @@ function closePopup() {
 }
 
 async function saveEntry() {
-  const subject = document.getElementById("subject").value;
-  const user = document.getElementById("user").value;
-  if (!calendarData[currentDate]) calendarData[currentDate] = [];
-  calendarData[currentDate] = [{ subject, user }];
-
-  logData.push({ date: currentDate, user, subject, action: "新增/修改", time: Date.now() / 1000 });
+  const subject = document.getElementById("popup-subject").value.trim();
+  if (!calendarData[editDate]) calendarData[editDate] = [];
+  calendarData[editDate] = [{ user: currentUser, subject }];
+  logData.push({ date: editDate, user: currentUser, subject, action: "新增/修改", time: Date.now() / 1000 });
 
   await updateJSON("data/calendar.json", calendarData);
   await updateJSON("data/calendar-log.json", logData);
+
   closePopup();
-  renderCalendar(calendarData);
+  renderCalendar();
   renderLogs();
 }
 
 async function deleteEntry() {
-  calendarData[currentDate] = [];
-
-  logData.push({ date: currentDate, user: "", subject: "", action: "刪除", time: Date.now() / 1000 });
+  calendarData[editDate] = [];
+  logData.push({ date: editDate, user: currentUser, subject: "", action: "刪除", time: Date.now() / 1000 });
 
   await updateJSON("data/calendar.json", calendarData);
   await updateJSON("data/calendar-log.json", logData);
+
   closePopup();
-  renderCalendar(calendarData);
+  renderCalendar();
   renderLogs();
 }
 
 function renderLogs() {
   const container = document.getElementById("calendar-log");
-  container.innerHTML = logData.map(log =>
-    `<div><b>${log.date}</b> - ${log.action} ${log.subject || ""} by ${log.user || "N/A"} <small>${new Date(log.time * 1000).toLocaleString()}</small></div>`
+  container.innerHTML = logData.slice().reverse().map(log =>
+    `<div><b>${log.date}</b> - ${log.action} ${log.subject || "（刪除）"} by ${log.user} 
+    <small>${new Date(log.time * 1000).toLocaleString()}</small></div>`
   ).join("");
 }
 
 (async () => {
+  currentUser = localStorage.getItem("calendar_user") || "";
+  if (currentUser) document.getElementById("user-login").innerHTML = `👋 歡迎 ${currentUser}`;
   calendarData = await fetchJSON("calendar.json");
   logData = await fetchJSON("calendar-log.json");
-  renderCalendar(calendarData);
+  renderCalendar();
   renderLogs();
 })();
